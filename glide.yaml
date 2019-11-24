@@ -1,0 +1,14 @@
+package: tobw
+import:
+- package: github.com/sirupsen/logrus
+  version: ~1.4.2
+- package: golang.org/x/sys
+  subpackages:
+  - unix
+- package: golang.org/x/net
+  subpackages:
+  - netutil
+- package: golang.org/x/text
+  version: ~0.3.2
+  subpackages:
+  - encoding/charmap
