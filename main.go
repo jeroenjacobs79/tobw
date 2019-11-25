@@ -20,6 +20,8 @@ package main
 
 import (
 	log "github.com/sirupsen/logrus"
+	"tobw/ansiterm"
+
 	//	"golang.org/x/text/encoding/charmap"
 	"io"
 	"net"
@@ -38,7 +40,7 @@ func main() {
 		FullTimestamp:true},
 	)
 	// set log level
-	log.SetLevel(log.TraceLevel)
+	log.SetLevel(log.DebugLevel)
 	// startup message
 	log.Infof("%s (%s) is starting up...\n", APP_NAME, APP_CODE)
 
@@ -80,12 +82,14 @@ func handleRequest(conn net.Conn) {
 	buf := make([]byte, 1024)
 	telnetConn := telnet.NewConnection(conn)
 	log.Infof("%s - Connected\n", telnetConn.RemoteAddr())
+	term := ansiterm.CreateAnsiTerminal(telnetConn)
+	log.Traceln(term)
 	active := true
 
 	// Close the connection when you're done with it.
 	defer func () {
 		log.Infof("%s - Disconnected\n", telnetConn.RemoteAddr())
-		err := conn.Close()
+		err := term.Close()
 		if err!=nil {
 			log.Error(err.Error())
 		}
@@ -96,7 +100,6 @@ func handleRequest(conn net.Conn) {
 		// Read the incoming connection into the buffer.
 		reqLen, err := telnetConn.Read(buf)
 		if reqLen > 0 {
-			log.Traceln(buf[:reqLen])
 			telnetConn.Write(buf[:reqLen])
 		}
 		if err != nil {

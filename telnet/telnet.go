@@ -204,7 +204,6 @@ func (c Conn) Read(data []byte) (int, error) {
 	//
 	if tempRead > 0 {
 		for _, element := range buffer[:tempRead] {
-			log.Tracef("%s - Received byte: %d\n", c.RemoteAddr(), element)
 			switch c.readState {
 			case STATE_DATA:
 				switch element {
@@ -212,10 +211,10 @@ func (c Conn) Read(data []byte) (int, error) {
 					log.Tracef("%s - State changed to STATE_COMMAND\n", c.RemoteAddr())
 					c.readState = STATE_COMMAND
 				case CH_CR:
-					c.readState = STATE_CR
 					data[destIndex] = element
 					destIndex++
 					log.Tracef("%s - State changed to STATE_CR\n", c.RemoteAddr())
+					c.readState = STATE_CR
 				default:
 					// not IAC or CR, so it's data
 					data[destIndex] = element
@@ -267,6 +266,7 @@ func (c Conn) Read(data []byte) (int, error) {
 						c.subNegBuffer.Reset()
 					default:
 						log.Debugf("%s - Received telnet command: %d\n", c.RemoteAddr(), element)
+						c.commandHandler(element)
 						log.Tracef("%s - State changed to STATE_DATA\n", c.RemoteAddr())
 						c.readState = STATE_DATA
 					}
@@ -380,7 +380,7 @@ func (c Conn) subNegHandler() {
 			}
 			w := binary.BigEndian.Uint16(data[1:3])
 			h := binary.BigEndian.Uint16(data[3:5])
-			// only update if size is bigger than zero. SyncTerm seems to send 0's as window size values.
+			// only update if size is bigger than zero.
 			if w > 0 {
 				c.W = int(w)
 			}
@@ -397,6 +397,34 @@ func (c Conn) subNegHandler() {
 
 }
 
+func (c Conn) commandHandler(command byte) {
+	// TO-DO: implement if necessary
+}
+
+// I doubt this is correct behaviour. I should investigate the Q Method (RFC1143) for option negotiation.
 func (c Conn) optionHandler(command byte, option byte) {
+	switch (command) {
+	case CMD_WILL:
+		switch(option) {
+		// only send DO for options we actually support
+		case OPT_NAWS, OPT_SUPPRESS_GA:
+			c.SendDo(option)
+		case OPT_ECHO:
+			// explicitely disable local echo on client for now? Should this be allowed if client requests it?
+			c.SendDont(option)
+		default:
+			c.SendDont(option)
+		}
+	case CMD_WONT:
+	case CMD_DO:
+		switch(option) {
+		case OPT_SUPPRESS_GA, OPT_ECHO:
+			c.SendWill(option)
+		default:
+			c.SendWont(option)
+
+		}
+	case CMD_DONT:
+	}
 
 }
