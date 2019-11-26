@@ -352,7 +352,7 @@ func NewConnection(c net.Conn) (*Conn) {
 	if err!=nil {
 		log.Errorln(err.Error())
 	}
-	err = conn.SendDo(OPT_NAWS)
+//	err = conn.SendDo(OPT_NAWS)
 	if err!=nil {
 		log.Errorln(err.Error())
 	}

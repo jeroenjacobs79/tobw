@@ -95,12 +95,59 @@ func handleRequest(conn net.Conn) {
 		}
 	}()
 
+	// print our welcome header
+	term.ClearScreen()
+	term.GotoXY(1,1)
+	term.SetColor(ansiterm.FG_BLACK, false)
+	term.Printf("Welcome to our game!\n\r")
+	term.SetColor(ansiterm.FG_RED, false)
+	term.Printf("Welcome to our game!\n\r")
+	term.SetColor(ansiterm.FG_GREEN, false)
+	term.Printf("Welcome to our game!\n\r")
+	term.SetColor(ansiterm.FG_YELLOW, false)
+	term.Printf("Welcome to our game!\n\r")
+	term.SetColor(ansiterm.FG_BLUE, false)
+	term.Printf("Welcome to our game!\n\r")
+	term.SetColor(ansiterm.FG_MAGENTA, false)
+	term.SetBlink(true)
+
+	term.Printf("Welcome to our game!\n\r")
+	term.SetColor(ansiterm.FG_CYAN, false)
+	term.Printf("Welcome to our game!\n\r")
+	term.SetColor(ansiterm.FG_WHITE, false)
+	term.Printf("Welcome to our game!\n\r")
+
+	term.GotoXY(13,1)
+	term.SetColor(ansiterm.FG_BLACK, true)
+	term.Printf("Welcome to our game!\n\r")
+	term.SetColor(ansiterm.FG_RED, true)
+	term.Printf("Welcome to our game!\n\r")
+	term.SetColor(ansiterm.FG_GREEN, true)
+	term.Printf("Welcome to our game!\n\r")
+	term.SetColor(ansiterm.FG_YELLOW, true)
+	term.Printf("Welcome to our game!\n\r")
+	term.SetColor(ansiterm.FG_BLUE, true)
+	term.Printf("Welcome to our game!\n\r")
+	term.SetColor(ansiterm.FG_MAGENTA, true)
+	term.Printf("Welcome to our game!\n\r")
+	term.SetColor(ansiterm.FG_CYAN, true)
+	term.Printf("Welcome to our game!\n\r")
+	term.SetColor(ansiterm.FG_WHITE, true)
+	term.Printf("Welcome to our game!\n\r")
+
+	term.GotoXY(1,40)
+	term.SetFullColor(ansiterm.FG_BLACK, ansiterm.BG_BLUE, false)
+	term.Printf("Welcome to our game!\n\r")
+
 	// while connection is active, process event loop
 	for active {
 		// Read the incoming connection into the buffer.
 		reqLen, err := telnetConn.Read(buf)
 		if reqLen > 0 {
-			telnetConn.Write(buf[:reqLen])
+			_, err := telnetConn.Write(buf[:reqLen])
+			if err != nil {
+				log.Errorln(err.Error())
+			}
 		}
 		if err != nil {
 			switch err {
