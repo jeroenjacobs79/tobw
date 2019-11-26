@@ -40,7 +40,7 @@ func main() {
 		FullTimestamp:true},
 	)
 	// set log level
-	log.SetLevel(log.TraceLevel)
+	log.SetLevel(log.DebugLevel)
 	// startup message
 	log.Infof("%s (%s) is starting up...\n", APP_NAME, APP_CODE)
 

@@ -21,7 +21,6 @@ package telnet
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"net"
 )
@@ -94,7 +93,7 @@ type Conn struct {
 }
 
 
-func (c Conn) SendCommand(cmd byte) (error) {
+func (c *Conn) SendCommand(cmd byte) (error) {
 	buffer := []byte {
 		IAC,
 		cmd,
@@ -103,7 +102,7 @@ func (c Conn) SendCommand(cmd byte) (error) {
 	return err
 }
 
-func (c Conn) SendWill(o byte) (error) {
+func (c *Conn) SendWill(o byte) (error) {
 	const cmd byte = 251
 	log.Debugf("%s - Send WILL: %d\n", c.RemoteAddr(), o)
 	buffer := []byte {
@@ -115,7 +114,7 @@ func (c Conn) SendWill(o byte) (error) {
 	return err
 }
 
-func (c Conn) SendWont(o byte) (error) {
+func (c *Conn) SendWont(o byte) (error) {
 	const cmd byte = 252
 	log.Debugf("%s - Send WONT: %d\n", c.RemoteAddr(), o)
 	buffer := []byte {
@@ -127,7 +126,7 @@ func (c Conn) SendWont(o byte) (error) {
 	return err
 }
 
-func (c Conn) SendDo(o byte) (error) {
+func (c *Conn) SendDo(o byte) (error) {
 	const cmd byte = 253
 	log.Debugf("%s - Send DO: %d\n", c.RemoteAddr(), o)
 	buffer := []byte {
@@ -139,7 +138,7 @@ func (c Conn) SendDo(o byte) (error) {
 	return err
 }
 
-func (c Conn) SendDont(o byte) (error) {
+func (c *Conn) SendDont(o byte) (error) {
 	const cmd byte = 254
 	log.Debugf("%s - Send DONT: %d\n",c.RemoteAddr(), o)
 	buffer := []byte {
@@ -155,7 +154,7 @@ func (c Conn) SendDont(o byte) (error) {
 
 // I have no idea if this code works ok under all circumstances (sudden disconnects etc..). Only time will tell.
 // IAC needs to be escaped (=duplicated), otherwise telnet client thinks we are sending a telnet command.
-func (c Conn) Write(data []byte) (totalWritten int, err error) {
+func (c *Conn) Write(data []byte) (totalWritten int, err error) {
 	for len(data) > 0 {
 		var currentWritten int
 		index := bytes.IndexByte(data, IAC)
@@ -189,7 +188,7 @@ func (c Conn) Write(data []byte) (totalWritten int, err error) {
 
 // Here we read data, and process any telnet command if they are encountered.
 // Escaped IAC bytes (= double IAC byte) should be unescaped here as well.
-func (c Conn) Read(data []byte) (int, error) {
+func (c *Conn) Read(data []byte) (int, error) {
 	destIndex := 0
 	buffer := make([]byte, len(data)) // make a new buffer for reading data, same size as original one
 	tempRead, err := c.Conn.Read(buffer)
@@ -336,7 +335,7 @@ func (c Conn) Read(data []byte) (int, error) {
 	return destIndex, err
 }
 
-func (c Conn) RequestTermSize() {
+func (c *Conn) RequestTermSize() {
 	err := c.SendDo(OPT_NAWS)
 	if err!=nil {
 		log.Errorln(err.Error())
@@ -364,7 +363,7 @@ func NewConnection(c net.Conn) (*Conn) {
 
 // private functions
 
-func (c Conn) subNegHandler() {
+func (c *Conn) subNegHandler() {
 	data := c.subNegBuffer.Bytes()
 	log.Traceln(data)
 
@@ -380,7 +379,6 @@ func (c Conn) subNegHandler() {
 			h := binary.BigEndian.Uint16(data[3:5])
 			// only update if size is bigger than zero.
 			// call resizeHandler if installed
-			fmt.Printf("subNegHandler: %v\n", c.resizeHandler)
 			if c.resizeHandler!=nil {
 				c.resizeHandler(int(w), int(h))
 			}
@@ -396,16 +394,15 @@ func (c Conn) subNegHandler() {
 
 func (c *Conn) InstallResizeHandler(handler func(int, int)) {
 	c.resizeHandler = handler
-	fmt.Printf("InstallResizeHandler: %v\n", c.resizeHandler)
 
 }
 
-func (c Conn) commandHandler(command byte) {
+func (c *Conn) commandHandler(command byte) {
 	// TO-DO: implement if necessary
 }
 
 // I doubt this is correct behaviour. I should investigate the Q Method (RFC1143) for option negotiation.
-func (c Conn) optionHandler(command byte, option byte) {
+func (c *Conn) optionHandler(command byte, option byte) {
 	switch (command) {
 	case CMD_WILL:
 		switch(option) {

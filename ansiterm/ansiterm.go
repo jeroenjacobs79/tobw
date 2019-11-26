@@ -66,7 +66,7 @@ func CreateAnsiTerminal(device io.ReadWriteCloser) (*AnsiTerminal){
 	return &term
 }
 
-func (t AnsiTerminal) ResizeTerminal(w int, h int) {
+func (t *AnsiTerminal) ResizeTerminal(w int, h int) {
 	if w > 0 {
 		t.columns = w
 	}
@@ -79,19 +79,19 @@ func (t AnsiTerminal) ResizeTerminal(w int, h int) {
 // implement standard formatting functions.
 // We don't provide scanf-like input functions. We will develop our own input routines.
 
-func (t AnsiTerminal) Print(a ...interface{}) (n int, err error) {
+func (t *AnsiTerminal) Print(a ...interface{}) (n int, err error) {
 	s := fmt.Sprint(a...)
 	n, err = t.Write([]byte(s))
 	return
 }
 
-func (t AnsiTerminal) Printf(format string, a ...interface{}) (n int, err error) {
+func (t *AnsiTerminal) Printf(format string, a ...interface{}) (n int, err error) {
 	s := fmt.Sprintf(format, a...)
 	n, err = t.Write([]byte(s))
 	return
 }
 
-func (t AnsiTerminal) Println(a ...interface{}) (n int, err error) {
+func (t *AnsiTerminal) Println(a ...interface{}) (n int, err error) {
 	s := fmt.Sprintln(a...)
 	n, err = t.Write([]byte(s))
 	return
@@ -99,7 +99,7 @@ func (t AnsiTerminal) Println(a ...interface{}) (n int, err error) {
 
 // color stuff
 
-func (t AnsiTerminal) SetColor(c FGColor, bright bool) {
+func (t *AnsiTerminal) SetColor(c FGColor, bright bool) {
 	if bright{
 		t.Printf("\x1B[0;1;%dm", c)
 	} else {
@@ -107,7 +107,7 @@ func (t AnsiTerminal) SetColor(c FGColor, bright bool) {
 	}
 }
 
-func (t AnsiTerminal) SetFullColor(c FGColor, b BGColor, bright bool) {
+func (t *AnsiTerminal) SetFullColor(c FGColor, b BGColor, bright bool) {
 	if bright {
 		t.Printf("\x1B[0;1;%d;%dm", c,b)
 	} else {
@@ -116,22 +116,22 @@ func (t AnsiTerminal) SetFullColor(c FGColor, b BGColor, bright bool) {
 	}
 }
 
-func (t AnsiTerminal) ClearEOL() {
+func (t *AnsiTerminal) ClearEOL() {
 	t.Printf("\x1B[K")
 }
 
-func (t AnsiTerminal) ClearScreen() {
+func (t *AnsiTerminal) ClearScreen() {
 	t.Printf("\x1B[2J")
 }
 
-func (t AnsiTerminal) GotoXY(row int, column int) {
+func (t *AnsiTerminal) GotoXY(row int, column int) {
 	// index 1-based
 	t.Printf("\x1B[%d;%dH", row, column)
 
 
 }
 
-func (t AnsiTerminal) SetBlink(v bool) {
+func (t *AnsiTerminal) SetBlink(v bool) {
 	if v {
 		t.Printf("\x1B[5m")
 	} else {
