@@ -21,6 +21,7 @@ package telnet
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"net"
 )
@@ -379,6 +380,7 @@ func (c Conn) subNegHandler() {
 			h := binary.BigEndian.Uint16(data[3:5])
 			// only update if size is bigger than zero.
 			// call resizeHandler if installed
+			fmt.Printf("subNegHandler: %v\n", c.resizeHandler)
 			if c.resizeHandler!=nil {
 				c.resizeHandler(int(w), int(h))
 			}
@@ -392,8 +394,10 @@ func (c Conn) subNegHandler() {
 
 }
 
-func (c Conn) InstallResizeHandler(handler func(int, int)) {
+func (c *Conn) InstallResizeHandler(handler func(int, int)) {
 	c.resizeHandler = handler
+	fmt.Printf("InstallResizeHandler: %v\n", c.resizeHandler)
+
 }
 
 func (c Conn) commandHandler(command byte) {
