@@ -66,6 +66,16 @@ func CreateAnsiTerminal(device io.ReadWriteCloser) (*AnsiTerminal){
 	return &term
 }
 
+func (t AnsiTerminal) ResizeTerminal(w int, h int) {
+	if w > 0 {
+		t.columns = w
+	}
+	if h > 0 {
+		t.rows = h
+	}
+	t.Printf("Terminal dimensions: columns=%d, rows=%d\r\n", t.columns, t.rows)
+}
+
 // implement standard formatting functions.
 // We don't provide scanf-like input functions. We will develop our own input routines.
 
@@ -128,3 +138,4 @@ func (t AnsiTerminal) SetBlink(v bool) {
 		t.Printf("\x1B[25m")
 	}
 }
+

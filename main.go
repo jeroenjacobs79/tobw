@@ -40,7 +40,7 @@ func main() {
 		FullTimestamp:true},
 	)
 	// set log level
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.TraceLevel)
 	// startup message
 	log.Infof("%s (%s) is starting up...\n", APP_NAME, APP_CODE)
 
@@ -83,6 +83,8 @@ func handleRequest(conn net.Conn) {
 	telnetConn := telnet.NewConnection(conn)
 	log.Infof("%s - Connected\n", telnetConn.RemoteAddr())
 	term := ansiterm.CreateAnsiTerminal(telnetConn)
+	telnetConn.InstallResizeHandler(term.ResizeTerminal)
+	telnetConn.RequestTermSize()
 	log.Traceln(term)
 	active := true
 

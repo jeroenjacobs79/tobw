@@ -89,9 +89,7 @@ type Conn struct {
 	// Bytes received for sub negotation. We also need to store this across multiple reads.
 	subNegBuffer bytes.Buffer
 	// term info we received
-	H int
-	W int
-
+	resizeHandler func(int, int)
 }
 
 
@@ -337,6 +335,13 @@ func (c Conn) Read(data []byte) (int, error) {
 	return destIndex, err
 }
 
+func (c Conn) RequestTermSize() {
+	err := c.SendDo(OPT_NAWS)
+	if err!=nil {
+		log.Errorln(err.Error())
+	}
+}
+
 // create and initialize telnet connection object
 func NewConnection(c net.Conn) (*Conn) {
 	conn := Conn {
@@ -352,14 +357,6 @@ func NewConnection(c net.Conn) (*Conn) {
 	if err!=nil {
 		log.Errorln(err.Error())
 	}
-//	err = conn.SendDo(OPT_NAWS)
-	if err!=nil {
-		log.Errorln(err.Error())
-	}
-
-	// set terminal size to sane default
-	conn.H = 25
-	conn.W = 80
 
 	return &conn
 }
@@ -381,11 +378,9 @@ func (c Conn) subNegHandler() {
 			w := binary.BigEndian.Uint16(data[1:3])
 			h := binary.BigEndian.Uint16(data[3:5])
 			// only update if size is bigger than zero.
-			if w > 0 {
-				c.W = int(w)
-			}
-			if h > 0 {
-				c.H = int(h)
+			// call resizeHandler if installed
+			if c.resizeHandler!=nil {
+				c.resizeHandler(int(w), int(h))
 			}
 			log.Debugf("%s - terminal size update received (w=%d, h=%d)\n", c.RemoteAddr(), w, h)
 		default:
@@ -395,6 +390,10 @@ func (c Conn) subNegHandler() {
 	// always reset the buffer after we handled the subnegotiation
 	c.subNegBuffer.Reset()
 
+}
+
+func (c Conn) InstallResizeHandler(handler func(int, int)) {
+	c.resizeHandler = handler
 }
 
 func (c Conn) commandHandler(command byte) {
