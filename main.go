@@ -21,9 +21,8 @@ package main
 import (
 	log "github.com/sirupsen/logrus"
 	"tobw/ansiterm"
-
+	"tobw/session"
 	//	"golang.org/x/text/encoding/charmap"
-	"io"
 	"net"
 	"tobw/telnet"
 )
@@ -40,7 +39,7 @@ func main() {
 		FullTimestamp:true},
 	)
 	// set log level
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.TraceLevel)
 	// startup message
 	log.Infof("%s (%s) is starting up...\n", APP_NAME, APP_CODE)
 
@@ -52,7 +51,7 @@ func main() {
 
 	// start telnet listener
 	log.Infof("Starting telnet listener on port %d...\n", TELNET_PORT)
-    srv, err := net.Listen("tcp", "127.0.0.1:5000")
+    srv, err := net.Listen("tcp", ":5000")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -86,7 +85,6 @@ func handleRequest(conn net.Conn) {
 	telnetConn.InstallResizeHandler(term.ResizeTerminal)
 	telnetConn.RequestTermSize()
 	log.Traceln(term)
-	active := true
 
 	// Close the connection when you're done with it.
 	defer func () {
@@ -97,68 +95,9 @@ func handleRequest(conn net.Conn) {
 		}
 	}()
 
-	// print our welcome header
-	term.ClearScreen()
-	term.GotoXY(1,1)
-	term.SetColor(ansiterm.FG_BLACK, false)
-	term.Printf("Welcome to our game!\n\r")
-	term.SetColor(ansiterm.FG_RED, false)
-	term.Printf("Welcome to our game!\n\r")
-	term.SetColor(ansiterm.FG_GREEN, false)
-	term.Printf("Welcome to our game!\n\r")
-	term.SetColor(ansiterm.FG_YELLOW, false)
-	term.Printf("Welcome to our game!\n\r")
-	term.SetColor(ansiterm.FG_BLUE, false)
-	term.Printf("Welcome to our game!\n\r")
-	term.SetColor(ansiterm.FG_MAGENTA, false)
-	term.SetBlink(true)
+	// Read a bit of data to let the telnet negotiation finish. Ignore any actual data for now.
+	_, _ = telnetConn.Read(buf)
 
-	term.Printf("Welcome to our game!\n\r")
-	term.SetColor(ansiterm.FG_CYAN, false)
-	term.Printf("Welcome to our game!\n\r")
-	term.SetColor(ansiterm.FG_WHITE, false)
-	term.Printf("Welcome to our game!\n\r")
 
-	term.GotoXY(13,1)
-	term.SetColor(ansiterm.FG_BLACK, true)
-	term.Printf("Welcome to our game!\n\r")
-	term.SetColor(ansiterm.FG_RED, true)
-	term.Printf("Welcome to our game!\n\r")
-	term.SetColor(ansiterm.FG_GREEN, true)
-	term.Printf("Welcome to our game!\n\r")
-	term.SetColor(ansiterm.FG_YELLOW, true)
-	term.Printf("Welcome to our game!\n\r")
-	term.SetColor(ansiterm.FG_BLUE, true)
-	term.Printf("Welcome to our game!\n\r")
-	term.SetColor(ansiterm.FG_MAGENTA, true)
-	term.Printf("Welcome to our game!\n\r")
-	term.SetColor(ansiterm.FG_CYAN, true)
-	term.Printf("Welcome to our game!\n\r")
-	term.SetColor(ansiterm.FG_WHITE, true)
-	term.Printf("Welcome to our game!\n\r")
-
-	term.GotoXY(1,40)
-	term.SetFullColor(ansiterm.FG_BLACK, ansiterm.BG_BLUE, false)
-	term.Printf("Welcome to our game!\n\r")
-
-	// while connection is active, process event loop
-	for active {
-		// Read the incoming connection into the buffer.
-		reqLen, err := telnetConn.Read(buf)
-		if reqLen > 0 {
-			_, err := telnetConn.Write(buf[:reqLen])
-			if err != nil {
-				log.Errorln(err.Error())
-			}
-		}
-		if err != nil {
-			switch err {
-			case io.EOF:
-				// do nothing, as this is expected when a connection is closed by the client
-			default:
-				log.Errorf("%s - %s\n", telnetConn.RemoteAddr(), err.Error())
-			}
-			active = false
-		}
-	}
+	session.Start(term)
 }

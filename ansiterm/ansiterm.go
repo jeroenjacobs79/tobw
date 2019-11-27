@@ -20,7 +20,10 @@ package ansiterm
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io"
+	"strings"
+	"unicode"
 )
 
 type AnsiTerminal struct {
@@ -73,27 +76,32 @@ func (t *AnsiTerminal) ResizeTerminal(w int, h int) {
 	if h > 0 {
 		t.rows = h
 	}
-	t.Printf("Terminal dimensions: columns=%d, rows=%d\r\n", t.columns, t.rows)
 }
 
+func (t *AnsiTerminal) GetTerminalSize() (columns int, rows int) {
+	return t.columns, t.rows
+}
 // implement standard formatting functions.
 // We don't provide scanf-like input functions. We will develop our own input routines.
 
 func (t *AnsiTerminal) Print(a ...interface{}) (n int, err error) {
 	s := fmt.Sprint(a...)
-	n, err = t.Write([]byte(s))
+	final:= strings.NewReplacer("\r\n", "\r\n", "\n", "\r\n").Replace(s)
+	n, err = t.Write([]byte(final))
 	return
 }
 
 func (t *AnsiTerminal) Printf(format string, a ...interface{}) (n int, err error) {
 	s := fmt.Sprintf(format, a...)
-	n, err = t.Write([]byte(s))
+	final:= strings.NewReplacer("\r\n", "\r\n", "\n", "\r\n").Replace(s)
+	n, err = t.Write([]byte(final))
 	return
 }
 
 func (t *AnsiTerminal) Println(a ...interface{}) (n int, err error) {
 	s := fmt.Sprintln(a...)
-	n, err = t.Write([]byte(s))
+	final:= strings.NewReplacer("\r\n", "\r\n", "\n", "\r\n").Replace(s)
+	n, err = t.Write([]byte(final))
 	return
 }
 
@@ -103,7 +111,7 @@ func (t *AnsiTerminal) SetColor(c FGColor, bright bool) {
 	if bright{
 		t.Printf("\x1B[0;1;%dm", c)
 	} else {
-		t.Printf("\x1B[0;2;%dm", c)
+		t.Printf("\x1B[0;22;%dm", c)
 	}
 }
 
@@ -139,3 +147,99 @@ func (t *AnsiTerminal) SetBlink(v bool) {
 	}
 }
 
+// Input routines
+
+func (t *AnsiTerminal) WaitKey() (r rune, err error) {
+	// wait for key and return. If key is character, it is converted to uppercase.
+	found := false
+	countRead := 0
+	for !found {
+		buffer := make([]byte, 256)
+		countRead, err = t.Read(buffer)
+		log.Traceln(buffer[:countRead])
+		for _, value := range string(buffer[:countRead]) {
+			if unicode.IsLower(value) {
+				r = unicode.ToUpper(value)
+			} else {
+				r = value
+			}
+			found = true
+			break
+		}
+		if err != nil {
+			break
+		}
+	}
+	return
+}
+
+func (t *AnsiTerminal) WaitKeys(allowed string) (r rune, err error) {
+	// wait for key that is permitted and return. If key is character, it is converted to uppercase.
+	found := false
+	countRead := 0
+	for !found {
+		buffer := make([]byte, 256)
+		countRead, err = t.Read(buffer)
+		log.Traceln(buffer[:countRead])
+		for _, value := range string(buffer[:countRead]) {
+			var current rune
+			if unicode.IsLower(value) {
+				current = unicode.ToUpper(value)
+			} else {
+				current = value
+			}
+			for _, allowedRune := range allowed {
+				if unicode.IsLower(allowedRune) {
+					allowedRune = unicode.ToUpper(allowedRune)
+				}
+				if current == allowedRune {
+					found = true
+					r = current
+					break
+				}
+			}
+		}
+		if err != nil {
+			break
+		}
+	}
+	return
+}
+
+func (t *AnsiTerminal) Input(size int) (result string, err error) {
+	// print field
+	var inputBuffer strings.Builder
+	var inputCounter = 0
+	var ch rune
+	t.SetFullColor(FG_BLUE, BG_BLUE, false)
+	for i := 0; i < size; i++ {
+		t.Print(" ")
+	}
+	t.Printf("\x1B[%dD", size)
+	t.SetFullColor(FG_WHITE, BG_BLUE, false)
+
+	// We have drawn our input box, now let's get input
+	ch, err = t.WaitKey()
+	for ch != '\r' {
+		if err != nil {
+			break
+		}
+		switch ch {
+		case '\a', '\f', '\n', '\t', '\v', '\\', '\'', '"':
+			// ignore these
+		case '\b', '\u007F':
+			// backspace entered
+			t.Printf("%c", ch)
+
+		default:
+			if inputCounter < size {
+				t.Printf("%c", ch)
+				inputCounter++
+			}
+		}
+		// next char
+		ch, err = t.WaitKey()
+	}
+	result = inputBuffer.String()
+	return
+}

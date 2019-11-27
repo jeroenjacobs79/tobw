@@ -12,3 +12,5 @@ import:
   version: ~0.3.2
   subpackages:
   - encoding/charmap
+- package: github.com/jinzhu/gorm
+  version: ~1.9.11
