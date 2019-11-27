@@ -19,6 +19,7 @@
 package session
 
 import (
+	"fmt"
 	"strings"
 	"tobw/ansiterm"
 )
@@ -82,6 +83,7 @@ func Start(term *ansiterm.AnsiTerminal) {
 	term.Printf(")elvet Kitten Brothel\n")
 
 	result, err := term.Input(8)
+	fmt.Printf("result %s", result)
 	if err != nil {
 		return
 	}

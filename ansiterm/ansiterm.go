@@ -36,7 +36,7 @@ type FGColor byte
 type BGColor byte
 
 const (
-
+	FG_RESET FGColor	= 0
 	FG_BLACK FGColor 	= 30
 	FG_RED FGColor 		= 31
 	FG_GREEN FGColor 	= 32
@@ -46,6 +46,7 @@ const (
 	FG_CYAN FGColor 	= 36
 	FG_WHITE FGColor 	= 37
 
+	BG_RESET			= 0
 	BG_BLACK BGColor 	= 40
 	BG_RED BGColor 		= 41
 	BG_GREEN BGColor 	= 42
@@ -233,6 +234,7 @@ func (t *AnsiTerminal) Input(size int) (result string, err error) {
 
 		default:
 			if inputCounter < size {
+				inputBuffer.WriteRune(ch)
 				t.Printf("%c", ch)
 				inputCounter++
 			}
@@ -240,6 +242,9 @@ func (t *AnsiTerminal) Input(size int) (result string, err error) {
 		// next char
 		ch, err = t.WaitKey()
 	}
+	t.Printf("\x1B[%dC", size-inputCounter)
+	t.Print("\n")
+	t.Printf("\x1B[0m")
 	result = inputBuffer.String()
 	return
 }
