@@ -19,7 +19,6 @@
 package session
 
 import (
-	"fmt"
 	"strings"
 	"tobw/ansiterm"
 )
@@ -47,43 +46,24 @@ func Start(term *ansiterm.AnsiTerminal) {
 	term.Printf("Choice your destination:\n\n")
 
 	// menu item
-	term.SetColor(ansiterm.FG_GREEN, false)
-	term.Printf("(")
-	term.SetColor(ansiterm.FG_RED, true)
-	term.Printf("F")
-	term.SetColor(ansiterm.FG_GREEN, false)
-	term.Printf(")orest\n")
+	term.DisplayMenuItem('F', "Explore the forest")
+	term.Println()
 
-	term.SetColor(ansiterm.FG_GREEN, false)
-	term.Printf("(")
-	term.SetColor(ansiterm.FG_RED, false)
-	term.Printf("C")
-	term.SetColor(ansiterm.FG_GREEN, false)
-	term.Printf(")ockroach Inn\n")
+	term.DisplayMenuItem('I', "Cockroach Inn")
+	term.Println()
 
-	term.SetColor(ansiterm.FG_GREEN, false)
-	term.Printf("(")
-	term.SetColor(ansiterm.FG_RED, false)
-	term.Printf("G")
-	term.SetColor(ansiterm.FG_GREEN, false)
-	term.Printf(")old\"R\"Us Bank\n")
+	term.DisplayMenuItem('B', "Cheat'm and Crook Bank")
+	term.Println()
 
-	term.SetColor(ansiterm.FG_GREEN, false)
-	term.Printf("(")
-	term.SetColor(ansiterm.FG_RED, false)
-	term.Printf("H")
-	term.SetColor(ansiterm.FG_GREEN, false)
-	term.Printf(")eal'm Hospital\n")
+	term.DisplayMenuItem('H', "Shaman's Healer Hut")
+	term.Println()
 
-	term.SetColor(ansiterm.FG_GREEN, false)
-	term.Printf("(")
-	term.SetColor(ansiterm.FG_RED, false)
-	term.Printf("V")
-	term.SetColor(ansiterm.FG_GREEN, false)
-	term.Printf(")elvet Kitten Brothel\n")
+	term.DisplayMenuItem('F', "Fluffy Kitty Brothel")
+	term.Println()
 
-	result, err := term.Input(8)
-	fmt.Printf("result %s", result)
+	term.SetColor(ansiterm.FG_WHITE, false)
+	term.Print("\nPlease enter your real name: ")
+	result, err := term.Input(25, ansiterm.INPUT_UPFIRST)
 	if err != nil {
 		return
 	}
