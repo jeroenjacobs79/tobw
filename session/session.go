@@ -19,6 +19,7 @@
 package session
 
 import (
+	"golang.org/x/text/encoding/charmap"
 	"strings"
 	"tobw/ansiterm"
 )
@@ -61,6 +62,20 @@ func Start(term *ansiterm.AnsiTerminal) {
 	term.DisplayMenuItem('F', "Fluffy Kitty Brothel")
 	term.Println()
 
+	term.DisplayMenuItem('P', "Post Office")
+	term.Println()
+
+	term.DisplayMenuItem('T', "Town Hall")
+	term.Println()
+
+
+	// codepage test stuff that needs to be removed
+	testb := byte(176)
+	resb := charmap.CodePage437.DecodeByte(testb)
+	charmap.CodePage437.NewDecoder() // (need to check this)
+	term.Println(string(resb))
+
+
 	term.SetColor(ansiterm.FG_WHITE, false)
 	term.Print("\nPlease enter your real name: ")
 	result, err := term.Input(25, ansiterm.INPUT_UPFIRST)
@@ -69,5 +84,6 @@ func Start(term *ansiterm.AnsiTerminal) {
 	}
 
 	term.Println(result)
+
 	return
 }
