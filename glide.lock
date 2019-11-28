@@ -1,22 +1,35 @@
-hash: 73febf67ada9c9cbdfbd9a546597d3dde4e87560857c5e12f4914a3bbd49c42a
-updated: 2019-11-26T21:58:41.216194+01:00
+hash: e79b2121e0901c86757b1d137ee08fe6e2e6a27143ea2555cd096e8ff10ef3c6
+updated: 2019-11-28T12:12:40.853975+01:00
 imports:
 - name: github.com/jinzhu/gorm
   version: 81c17a7e2529c59efc4e74c5b32c1fb71fb12fa2
 - name: github.com/konsorten/go-windows-terminal-sequences
   version: f55edac94c9bbba5d6182a4be46d86a2c9b5b50e
+- name: github.com/mdp/qrterminal
+  version: 11fc7373051f5e96eac3079061343e2899fdd9c6
+  subpackages:
+  - v3
 - name: github.com/sirupsen/logrus
   version: 839c75faf7f98a33d445d181f3018b5c3409a45e
 - name: golang.org/x/net
-  version: ffdde105785063a81acd95bdf89ea53f6e0aac2d
+  version: ef20fe5d793301b553005db740f730d87993f778
   subpackages:
   - netutil
 - name: golang.org/x/sys
-  version: 8a8471f7e56d296bf6a05aa09520b111beb1937a
+  version: 6d18c012aee9febd81bbf9806760c8c4480e870d
   subpackages:
   - unix
 - name: golang.org/x/text
   version: 342b2e1fbaa52c93f31447ad2c6abc048c63e475
   subpackages:
+  - encoding
   - encoding/charmap
+  - encoding/internal
+  - encoding/internal/identifier
+  - transform
+- name: rsc.io/qr
+  version: ca9a01fc2f9505024045632c50e5e8cd6142fafe
+  subpackages:
+  - coding
+  - gf256
 testImports: []

@@ -14,3 +14,9 @@ import:
   - encoding/charmap
 - package: github.com/jinzhu/gorm
   version: ~1.9.11
+- package: github.com/mdp/qrterminal
+  version: ~3.0.0
+  subpackages:
+  - v3
+- package: rsc.io/qr
+  version: ~0.2.0

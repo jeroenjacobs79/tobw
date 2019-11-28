@@ -19,7 +19,7 @@
 package session
 
 import (
-	"golang.org/x/text/encoding/charmap"
+	"github.com/mdp/qrterminal"
 	"strings"
 	"tobw/ansiterm"
 )
@@ -68,12 +68,21 @@ func Start(term *ansiterm.AnsiTerminal) {
 	term.DisplayMenuItem('T', "Town Hall")
 	term.Println()
 
+	
+	// qr test
+	var qrBuffer strings.Builder
+	qrConfig := qrterminal.Config{
+		Level: qrterminal.M,
+		Writer: &qrBuffer,
+		HalfBlocks: false,
+		BlackChar: qrterminal.WHITE,
+		WhiteChar: qrterminal.BLACK,
+		QuietZone: 1,
 
-	// codepage test stuff that needs to be removed
-	testb := byte(176)
-	resb := charmap.CodePage437.DecodeByte(testb)
-	charmap.CodePage437.NewDecoder() // (need to check this)
-	term.Println(string(resb))
+	}
+	// Taken from google example: https://github.com/google/google-authenticator/wiki/Key-Uri-Format
+	qrterminal.GenerateWithConfig("otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example", qrConfig)
+	term.Print(qrBuffer.String())
 
 
 	term.SetColor(ansiterm.FG_WHITE, false)
