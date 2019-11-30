@@ -80,7 +80,7 @@ func handleRequest(conn net.Conn) {
 	// Make a buffer to hold incoming data.
 	buf := make([]byte, 1024)
 	telnetConn := telnet.NewConnection(conn)
-	log.Infof("%s - Connected\n", telnetConn.RemoteAddr())
+	log.Infof("%s - Connected", telnetConn.RemoteAddr())
 	term := ansiterm.CreateAnsiTerminal(telnetConn)
 	telnetConn.InstallResizeHandler(term.ResizeTerminal)
 	telnetConn.RequestTermSize()
