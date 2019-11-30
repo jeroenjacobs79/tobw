@@ -104,7 +104,7 @@ func (c *Conn) SendCommand(cmd byte) (error) {
 
 func (c *Conn) SendWill(o byte) (error) {
 	const cmd byte = 251
-	log.Debugf("%s - Send WILL: %d\n", c.RemoteAddr(), o)
+	log.Debugf("%s - Send WILL: %d", c.RemoteAddr(), o)
 	buffer := []byte {
 		IAC,
 		cmd,
@@ -116,7 +116,7 @@ func (c *Conn) SendWill(o byte) (error) {
 
 func (c *Conn) SendWont(o byte) (error) {
 	const cmd byte = 252
-	log.Debugf("%s - Send WONT: %d\n", c.RemoteAddr(), o)
+	log.Debugf("%s - Send WONT: %d", c.RemoteAddr(), o)
 	buffer := []byte {
 		IAC,
 		cmd,
@@ -128,7 +128,7 @@ func (c *Conn) SendWont(o byte) (error) {
 
 func (c *Conn) SendDo(o byte) (error) {
 	const cmd byte = 253
-	log.Debugf("%s - Send DO: %d\n", c.RemoteAddr(), o)
+	log.Debugf("%s - Send DO: %d", c.RemoteAddr(), o)
 	buffer := []byte {
 		IAC,
 		cmd,
@@ -140,7 +140,7 @@ func (c *Conn) SendDo(o byte) (error) {
 
 func (c *Conn) SendDont(o byte) (error) {
 	const cmd byte = 254
-	log.Debugf("%s - Send DONT: %d\n",c.RemoteAddr(), o)
+	log.Debugf("%s - Send DONT: %d",c.RemoteAddr(), o)
 	buffer := []byte {
 		IAC,
 		cmd,
@@ -206,12 +206,12 @@ func (c *Conn) Read(data []byte) (int, error) {
 			case STATE_DATA:
 				switch element {
 				case IAC:
-					log.Tracef("%s - State changed to STATE_COMMAND\n", c.RemoteAddr())
+					log.Tracef("%s - State changed to STATE_COMMAND", c.RemoteAddr())
 					c.readState = STATE_COMMAND
 				case CH_CR:
 					data[destIndex] = element
 					destIndex++
-					log.Tracef("%s - State changed to STATE_CR\n", c.RemoteAddr())
+					log.Tracef("%s - State changed to STATE_CR", c.RemoteAddr())
 					c.readState = STATE_CR
 				default:
 					// not IAC or CR, so it's data
@@ -232,7 +232,7 @@ func (c *Conn) Read(data []byte) (int, error) {
 
 				}
 				// switch back to normal data state
-				log.Tracef("%s - State changed to STATE_DATA\n", c.RemoteAddr())
+				log.Tracef("%s - State changed to STATE_DATA", c.RemoteAddr())
 				c.readState = STATE_DATA
 
 			case STATE_COMMAND:
@@ -240,56 +240,56 @@ func (c *Conn) Read(data []byte) (int, error) {
 					// this is en escaped byte 255, so just consider it as data
 					data[destIndex] = element
 					destIndex++
-					log.Tracef("%s - State changed to STATE_DATA\n", c.RemoteAddr())
+					log.Tracef("%s - State changed to STATE_DATA", c.RemoteAddr())
 					c.readState = STATE_DATA
 				} else {
 					// it's a telnet command. Set our processor to the correct state before processing the next byte
 					switch element {
 					case CMD_WILL:
-						log.Tracef("%s - State changed to STATE_WILL\n", c.RemoteAddr())
+						log.Tracef("%s - State changed to STATE_WILL", c.RemoteAddr())
 						c.readState = STATE_WILL
 					case CMD_DO:
-						log.Tracef("%s - State changed to STATE_DO\n", c.RemoteAddr())
+						log.Tracef("%s - State changed to STATE_DO", c.RemoteAddr())
 						c.readState = STATE_DO
 					case CMD_WONT:
-						log.Tracef("%s - State changed to STATE_WONT\n", c.RemoteAddr())
+						log.Tracef("%s - State changed to STATE_WONT", c.RemoteAddr())
 						c.readState = STATE_WONT
 					case CMD_DONT:
-						log.Tracef("%s - State changed to STATE_DONT\n", c.RemoteAddr())
+						log.Tracef("%s - State changed to STATE_DONT", c.RemoteAddr())
 						c.readState = STATE_DONT
 					case CMD_SB:
-						log.Tracef("%s - State changed to STATE_SUBNEG\n", c.RemoteAddr())
+						log.Tracef("%s - State changed to STATE_SUBNEG", c.RemoteAddr())
 						c.readState = STATE_SUBNEG
 						// start of a new subnegotation, so let's reset the buffer
 						c.subNegBuffer.Reset()
 					default:
-						log.Debugf("%s - Received telnet command: %d\n", c.RemoteAddr(), element)
+						log.Debugf("%s - Received telnet command: %d", c.RemoteAddr(), element)
 						c.commandHandler(element)
-						log.Tracef("%s - State changed to STATE_DATA\n", c.RemoteAddr())
+						log.Tracef("%s - State changed to STATE_DATA", c.RemoteAddr())
 						c.readState = STATE_DATA
 					}
 				}
 			case STATE_WILL:
-				log.Debugf("%s - Received WILL: %d\n", c.RemoteAddr(), element)
-				log.Tracef("%s - State changed to STATE_DATA\n", c.RemoteAddr())
+				log.Debugf("%s - Received WILL: %d", c.RemoteAddr(), element)
+				log.Tracef("%s - State changed to STATE_DATA", c.RemoteAddr())
 				c.optionHandler(CMD_WILL, element)
 				c.readState = STATE_DATA
 
 			case STATE_WONT:
-				log.Debugf("%s - Received WONT: %d\n", c.RemoteAddr(), element)
-				log.Tracef("%s - State changed to STATE_DATA\n", c.RemoteAddr())
+				log.Debugf("%s - Received WONT: %d", c.RemoteAddr(), element)
+				log.Tracef("%s - State changed to STATE_DATA", c.RemoteAddr())
 				c.optionHandler(CMD_WONT, element)
 				c.readState = STATE_DATA
 
 			case STATE_DO:
-				log.Debugf("%s - Received DO: %d\n", c.RemoteAddr(), element)
-				log.Tracef("%s - State changed to STATE_DATA\n", c.RemoteAddr())
+				log.Debugf("%s - Received DO: %d", c.RemoteAddr(), element)
+				log.Tracef("%s - State changed to STATE_DATA", c.RemoteAddr())
 				c.optionHandler(CMD_DO, element)
 				c.readState = STATE_DATA
 
 			case STATE_DONT:
-				log.Debugf("%s - Received DONT: %d\n", c.RemoteAddr(), element)
-				log.Tracef("%s - State changed to STATE_DATA\n", c.RemoteAddr())
+				log.Debugf("%s - Received DONT: %d", c.RemoteAddr(), element)
+				log.Tracef("%s - State changed to STATE_DATA", c.RemoteAddr())
 				c.optionHandler(CMD_DONT, element)
 				c.readState = STATE_DATA
 
@@ -298,7 +298,7 @@ func (c *Conn) Read(data []byte) (int, error) {
 			case STATE_SUBNEG:
 				switch element {
 				case IAC:
-					log.Tracef("%s - State changed to STATE_SUBNEG_IAC\n", c.RemoteAddr())
+					log.Tracef("%s - State changed to STATE_SUBNEG_IAC", c.RemoteAddr())
 					c.readState = STATE_SUBNEG_IAC
 				default:
 					// default action is to add data to the buffer
@@ -318,13 +318,13 @@ func (c *Conn) Read(data []byte) (int, error) {
 					if err!=nil {
 						log.Errorln(err.Error())
 					}
-					log.Tracef("%s - State changed to STATE_SUBNEG\n", c.RemoteAddr())
+					log.Tracef("%s - State changed to STATE_SUBNEG", c.RemoteAddr())
 					c.readState = STATE_SUBNEG
 
 				case CMD_SE:
 					// received end of subnegotation. Call handler and move back to data mode
 					c.subNegHandler()
-					log.Tracef("%s - State changed to STATE_DATA\n", c.RemoteAddr())
+					log.Tracef("%s - State changed to STATE_DATA", c.RemoteAddr())
 					c.readState = STATE_DATA
 				}
 
@@ -372,7 +372,7 @@ func (c *Conn) subNegHandler() {
 		switch option {
 		case OPT_NAWS:
 			if len(data) != 5 {
-				log.Errorf("%s - Incorrect amount of parameters for NAWS subnegotiation.\n", c.RemoteAddr())
+				log.Errorf("%s - Incorrect amount of parameters for NAWS subnegotiation.", c.RemoteAddr())
 				break
 			}
 			w := binary.BigEndian.Uint16(data[1:3])
@@ -382,9 +382,9 @@ func (c *Conn) subNegHandler() {
 			if c.resizeHandler!=nil {
 				c.resizeHandler(int(w), int(h))
 			}
-			log.Debugf("%s - terminal size update received (w=%d, h=%d)\n", c.RemoteAddr(), w, h)
+			log.Debugf("%s - terminal size update received (w=%d, h=%d)", c.RemoteAddr(), w, h)
 		default:
-			log.Debugf("%s - Unknown subnegotation received (%d). Ignoring.\n", c.RemoteAddr(), option)
+			log.Debugf("%s - Unknown subnegotation received (%d). Ignoring.", c.RemoteAddr(), option)
 		}
 	}
 	// always reset the buffer after we handled the subnegotiation

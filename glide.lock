@@ -1,5 +1,5 @@
 hash: e79b2121e0901c86757b1d137ee08fe6e2e6a27143ea2555cd096e8ff10ef3c6
-updated: 2019-11-28T12:12:40.853975+01:00
+updated: 2019-11-28T13:09:32.807657+01:00
 imports:
 - name: github.com/jinzhu/gorm
   version: 81c17a7e2529c59efc4e74c5b32c1fb71fb12fa2
@@ -22,11 +22,7 @@ imports:
 - name: golang.org/x/text
   version: 342b2e1fbaa52c93f31447ad2c6abc048c63e475
   subpackages:
-  - encoding
   - encoding/charmap
-  - encoding/internal
-  - encoding/internal/identifier
-  - transform
 - name: rsc.io/qr
   version: ca9a01fc2f9505024045632c50e5e8cd6142fafe
   subpackages:

@@ -41,7 +41,7 @@ func main() {
 	// set log level
 	log.SetLevel(log.InfoLevel)
 	// startup message
-	log.Infof("%s (%s) is starting up...\n", APP_NAME, APP_CODE)
+	log.Infof("%s (%s) is starting up...", APP_NAME, APP_CODE)
 
 	// codepage test stuff that needs to be removed
 	// testb := byte(176)
@@ -50,7 +50,7 @@ func main() {
 	//fmt.Println(string(resb))
 
 	// start telnet listener
-	log.Infof("Starting telnet listener on port %d...\n", TELNET_PORT)
+	log.Infof("Starting telnet listener on port %d...", TELNET_PORT)
     srv, err := net.Listen("tcp", ":5000")
 	if err != nil {
 		log.Fatal(err.Error())
@@ -88,7 +88,7 @@ func handleRequest(conn net.Conn) {
 
 	// Close the connection when you're done with it.
 	defer func () {
-		log.Infof("%s - Disconnected\n", telnetConn.RemoteAddr())
+		log.Infof("%s - Disconnected", telnetConn.RemoteAddr())
 		err := term.Close()
 		if err!=nil {
 			log.Error(err.Error())
