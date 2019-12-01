@@ -139,6 +139,7 @@ func StartListener(wg *sync.WaitGroup, address string,c ConnectionType) {
 }
 
 func handleSshRequest(conn net.Conn, conf *ssh.ServerConfig) {
+	log.Infof("%s - Connected", conn.RemoteAddr())
 	_, chans, reqs, err := ssh.NewServerConn(conn, conf)
 	if err != nil {
 		log.Errorf("%s - ssh handshake failed", conn.RemoteAddr())
@@ -168,14 +169,13 @@ func handleSshRequest(conn net.Conn, conf *ssh.ServerConfig) {
 		}(requests)
 
 		term := ansiterm.CreateAnsiTerminal(channel)
-		defer func() {
-			log.Infof("%s - Disconnected", conn.RemoteAddr())
-			err := term.Close()
-			if err != nil {
-				log.Error(err.Error())
-			}
-		}()
-		go session.Start(term)
+		session.Start(term)
+		log.Infof("%s - Disconnected", conn.RemoteAddr())
+		err = term.Close()
+		if err != nil {
+			log.Error(err.Error())
+		}
+
 	}
 }
 
