@@ -26,7 +26,7 @@ import (
 
 func Start(term *ansiterm.AnsiTerminal) {
 	term.ClearScreen()
-	term.GotoXY(1,1)
+	term.GotoXY(1, 1)
 	term.SetColor(ansiterm.FG_WHITE, true)
 	term.Printf("\nTale of the Black Wyvern - ")
 	term.SetColor(ansiterm.FG_GREEN, false)
@@ -34,10 +34,10 @@ func Start(term *ansiterm.AnsiTerminal) {
 	term.SetColor(ansiterm.FG_GREEN, true)
 	cols, _ := term.GetTerminalSize()
 	var line string
-	if (cols%2 == 0) {
-		line = strings.Repeat("-=",cols/2)
+	if cols%2 == 0 {
+		line = strings.Repeat("-=", cols/2)
 	} else {
-		line = strings.Repeat("-=",(cols-1)/2)
+		line = strings.Repeat("-=", (cols-1)/2)
 	}
 
 	term.Printf("%s\n", line)
@@ -68,22 +68,19 @@ func Start(term *ansiterm.AnsiTerminal) {
 	term.DisplayMenuItem('T', "Town Hall")
 	term.Println()
 
-	
 	// qr test
 	var qrBuffer strings.Builder
 	qrConfig := qrterminal.Config{
-		Level: qrterminal.M,
-		Writer: &qrBuffer,
+		Level:      qrterminal.M,
+		Writer:     &qrBuffer,
 		HalfBlocks: false,
-		BlackChar: qrterminal.WHITE,
-		WhiteChar: qrterminal.BLACK,
-		QuietZone: 1,
-
+		BlackChar:  qrterminal.WHITE,
+		WhiteChar:  qrterminal.BLACK,
+		QuietZone:  1,
 	}
 	// Taken from google example: https://github.com/google/google-authenticator/wiki/Key-Uri-Format
 	qrterminal.GenerateWithConfig("otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example", qrConfig)
 	term.Print(qrBuffer.String())
-
 
 	term.SetColor(ansiterm.FG_WHITE, false)
 	term.Print("\nPlease enter your real name: ")

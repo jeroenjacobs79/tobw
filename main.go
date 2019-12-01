@@ -32,7 +32,7 @@ const (
 func main() {
 	// set log format to include timestamp, even when TTY is attached.
 	log.SetFormatter(&log.TextFormatter{
-		FullTimestamp:true},
+		FullTimestamp: true},
 	)
 	// set log level
 	log.SetLevel(log.InfoLevel)
@@ -52,6 +52,4 @@ func main() {
 
 	wg.Wait()
 
-
 }
-

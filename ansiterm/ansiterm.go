@@ -30,7 +30,7 @@ import (
 type AnsiTerminal struct {
 	io.ReadWriteCloser
 	columns int
-	rows int
+	rows    int
 }
 
 type FGColor byte
@@ -38,40 +38,39 @@ type BGColor byte
 type InputMode int
 
 const (
-	FG_RESET FGColor	= 0
-	FG_BLACK FGColor 	= 30
-	FG_RED FGColor 		= 31
-	FG_GREEN FGColor 	= 32
-	FG_YELLOW FGColor	= 33
-	FG_BLUE FGColor 	= 34
-	FG_MAGENTA FGColor 	= 35
-	FG_CYAN FGColor 	= 36
-	FG_WHITE FGColor 	= 37
+	FG_RESET   FGColor = 0
+	FG_BLACK   FGColor = 30
+	FG_RED     FGColor = 31
+	FG_GREEN   FGColor = 32
+	FG_YELLOW  FGColor = 33
+	FG_BLUE    FGColor = 34
+	FG_MAGENTA FGColor = 35
+	FG_CYAN    FGColor = 36
+	FG_WHITE   FGColor = 37
 
-	BG_RESET			= 0
-	BG_BLACK BGColor 	= 40
-	BG_RED BGColor 		= 41
-	BG_GREEN BGColor 	= 42
-	BG_YELLOW BGColor	= 43
-	BG_BLUE BGColor 	= 44
-	BG_MAGENTA BGColor 	= 45
-	BG_CYAN BGColor 	= 46
-	BG_WHITE BGColor 	= 47
+	BG_RESET           = 0
+	BG_BLACK   BGColor = 40
+	BG_RED     BGColor = 41
+	BG_GREEN   BGColor = 42
+	BG_YELLOW  BGColor = 43
+	BG_BLUE    BGColor = 44
+	BG_MAGENTA BGColor = 45
+	BG_CYAN    BGColor = 46
+	BG_WHITE   BGColor = 47
 
-	INPUT_ALL InputMode = 0
-	INPUT_DIGIT InputMode = 1
-	INPUT_UPALL InputMode = 2
+	INPUT_ALL      InputMode = 0
+	INPUT_DIGIT    InputMode = 1
+	INPUT_UPALL    InputMode = 2
 	INPUT_PASSWORD InputMode = 3
-	INPUT_UPFIRST InputMode = 4
+	INPUT_UPFIRST  InputMode = 4
 )
 
-
-func CreateAnsiTerminal(device io.ReadWriteCloser) (*AnsiTerminal){
+func CreateAnsiTerminal(device io.ReadWriteCloser) *AnsiTerminal {
 	term := AnsiTerminal{
 		ReadWriteCloser: device,
 		// this is pretty standard in case we don't receive any updates on the size
 		columns: 80,
-		rows: 24,
+		rows:    24,
 	}
 	return &term
 }
@@ -88,26 +87,27 @@ func (t *AnsiTerminal) ResizeTerminal(w int, h int) {
 func (t *AnsiTerminal) GetTerminalSize() (columns int, rows int) {
 	return t.columns, t.rows
 }
+
 // implement standard formatting functions.
 // We don't provide scanf-like input functions. We will develop our own input routines.
 
 func (t *AnsiTerminal) Print(a ...interface{}) (n int, err error) {
 	s := fmt.Sprint(a...)
-	final:= strings.NewReplacer("\r\n", "\r\n", "\n", "\r\n").Replace(s)
+	final := strings.NewReplacer("\r\n", "\r\n", "\n", "\r\n").Replace(s)
 	n, err = t.Write([]byte(final))
 	return
 }
 
 func (t *AnsiTerminal) Printf(format string, a ...interface{}) (n int, err error) {
 	s := fmt.Sprintf(format, a...)
-	final:= strings.NewReplacer("\r\n", "\r\n", "\n", "\r\n").Replace(s)
+	final := strings.NewReplacer("\r\n", "\r\n", "\n", "\r\n").Replace(s)
 	n, err = t.Write([]byte(final))
 	return
 }
 
 func (t *AnsiTerminal) Println(a ...interface{}) (n int, err error) {
 	s := fmt.Sprintln(a...)
-	final:= strings.NewReplacer("\r\n", "\r\n", "\n", "\r\n").Replace(s)
+	final := strings.NewReplacer("\r\n", "\r\n", "\n", "\r\n").Replace(s)
 	n, err = t.Write([]byte(final))
 	return
 }
@@ -115,7 +115,7 @@ func (t *AnsiTerminal) Println(a ...interface{}) (n int, err error) {
 // color stuff
 
 func (t *AnsiTerminal) SetColor(c FGColor, bright bool) {
-	if bright{
+	if bright {
 		t.Printf("\x1B[0;1;%dm", c)
 	} else {
 		t.Printf("\x1B[0;22;%dm", c)
@@ -124,9 +124,9 @@ func (t *AnsiTerminal) SetColor(c FGColor, bright bool) {
 
 func (t *AnsiTerminal) SetFullColor(c FGColor, b BGColor, bright bool) {
 	if bright {
-		t.Printf("\x1B[0;1;%d;%dm", c,b)
+		t.Printf("\x1B[0;1;%d;%dm", c, b)
 	} else {
-		t.Printf("\x1B[0;2;%d;%dm", c,b)
+		t.Printf("\x1B[0;2;%d;%dm", c, b)
 
 	}
 }
@@ -142,7 +142,6 @@ func (t *AnsiTerminal) ClearScreen() {
 func (t *AnsiTerminal) GotoXY(row int, column int) {
 	// index 1-based
 	t.Printf("\x1B[%d;%dH", row, column)
-
 
 }
 
@@ -173,7 +172,7 @@ func (t *AnsiTerminal) WaitKey(ignoreCase bool) (r rune, err error) {
 	for !found {
 		buffer := make([]byte, 256)
 		countRead, err = t.Read(buffer)
-//		log.Traceln(buffer[:countRead])
+		//		log.Traceln(buffer[:countRead])
 		for _, value := range string(buffer[:countRead]) {
 			if unicode.IsLower(value) && ignoreCase {
 				r = unicode.ToUpper(value)
@@ -260,7 +259,7 @@ func (t *AnsiTerminal) Input(size int, mode InputMode) (result string, err error
 		default:
 			if inputCounter < size {
 				if unicode.IsPrint(ch) {
-					switch(mode) {
+					switch mode {
 					case INPUT_ALL:
 						inputBuffer.WriteRune(ch)
 						inputCounter++
@@ -283,7 +282,7 @@ func (t *AnsiTerminal) Input(size int, mode InputMode) (result string, err error
 							t.Printf("%c", ch)
 						}
 					case INPUT_UPFIRST:
-						if unicode.IsSpace(lastChar) || inputCounter==0 {
+						if unicode.IsSpace(lastChar) || inputCounter == 0 {
 							ch = unicode.ToUpper(ch)
 						}
 						lastChar = ch

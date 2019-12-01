@@ -53,28 +53,27 @@ func (t ConnectionType) String() (result string) {
 	return
 }
 
-
-func StartListener(wg *sync.WaitGroup, address string,c ConnectionType) {
+func StartListener(wg *sync.WaitGroup, address string, c ConnectionType) {
 	// start telnet listener
 	log.Infof("Starting %s listener on address %s...", c, address)
 
 	// listeners for telnet and ssh
-	if c!=Ssh {
+	if c != Ssh {
 		srv, err := net.Listen("tcp", address)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
 		// close listener on exit
-		defer func () {
+		defer func() {
 			err := srv.Close()
-			if err!=nil {
+			if err != nil {
 				log.Errorln(err.Error())
 			}
 			wg.Done()
 		}()
 
 		// start accepting connections
-		log.Infof("Started %s listener successfully on address %s.",c ,address)
+		log.Infof("Started %s listener successfully on address %s.", c, address)
 		for {
 			// Listen for an incoming connection.
 			conn, err := srv.Accept()
@@ -96,7 +95,7 @@ func StartListener(wg *sync.WaitGroup, address string,c ConnectionType) {
 		// This adapted from the example here: https://godoc.org/golang.org/x/crypto/ssh#example-NewServerConn
 		// This works totally different from the telnet/raw implementation.
 
-		config := &ssh.ServerConfig {
+		config := &ssh.ServerConfig{
 			NoClientAuth: true,
 		}
 		privateBytes, err := ioutil.ReadFile("/Users/jeroenjacobs/.ssh/tobw_rsa")
@@ -115,16 +114,16 @@ func StartListener(wg *sync.WaitGroup, address string,c ConnectionType) {
 			log.Fatal(err.Error())
 		}
 		// close listener on exit
-		defer func () {
+		defer func() {
 			err := srv.Close()
-			if err!=nil {
+			if err != nil {
 				log.Errorln(err.Error())
 			}
 			wg.Done()
 		}()
 
 		// start accepting connections
-		log.Infof("Started %s listener successfully on address %s.",c ,address)
+		log.Infof("Started %s listener successfully on address %s.", c, address)
 
 		for {
 			// Listen for an incoming connection.
@@ -196,10 +195,10 @@ func handleTelnetRequest(conn net.Conn) {
 	log.Traceln(term)
 
 	// Close the connection when you're done with it.
-	defer func () {
+	defer func() {
 		log.Infof("%s - Disconnected", telnetConn.RemoteAddr())
 		err := term.Close()
-		if err!=nil {
+		if err != nil {
 			log.Error(err.Error())
 		}
 	}()
@@ -216,10 +215,10 @@ func handleRawRequest(conn net.Conn) {
 	log.Traceln(term)
 
 	// Close the connection when you're done with it.
-	defer func () {
+	defer func() {
 		log.Infof("%s - Disconnected", conn.RemoteAddr())
 		err := term.Close()
-		if err!=nil {
+		if err != nil {
 			log.Error(err.Error())
 		}
 	}()
