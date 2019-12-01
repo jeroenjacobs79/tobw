@@ -403,28 +403,31 @@ func (c *Conn) commandHandler(command byte) {
 
 // I doubt this is correct behaviour. I should investigate the Q Method (RFC1143) for option negotiation.
 func (c *Conn) optionHandler(command byte, option byte) {
-	switch (command) {
+	var err error
+	switch command {
 	case CMD_WILL:
 		switch(option) {
 		// only send DO for options we actually support
 		case OPT_NAWS, OPT_SUPPRESS_GA:
-			c.SendDo(option)
+			err = c.SendDo(option)
 		case OPT_ECHO:
-			// explicitely disable local echo on client for now? Should this be allowed if client requests it?
-			c.SendDont(option)
+			// explicitly disable local echo on client for now? Should this be allowed if client requests it?
+			err = c.SendDont(option)
 		default:
-			c.SendDont(option)
+			err = c.SendDont(option)
 		}
 	case CMD_WONT:
 	case CMD_DO:
 		switch(option) {
 		case OPT_SUPPRESS_GA, OPT_ECHO:
-			c.SendWill(option)
+			err = c.SendWill(option)
 		default:
-			c.SendWont(option)
+			err = c.SendWont(option)
 
 		}
 	case CMD_DONT:
 	}
-
+	if err != nil {
+		log.Errorln(err.Error())
+	}
 }

@@ -151,7 +151,10 @@ func handleSshRequest(conn net.Conn, conf *ssh.ServerConfig) {
 
 	for newChannel := range chans {
 		if newChannel.ChannelType() != "session" {
-			newChannel.Reject(ssh.UnknownChannelType, "unknown channel type")
+			err = newChannel.Reject(ssh.UnknownChannelType, "unknown channel type")
+			if err != nil {
+				log.Errorln(err.Error())
+			}
 			continue
 		}
 		channel, requests, err := newChannel.Accept()
@@ -164,7 +167,10 @@ func handleSshRequest(conn net.Conn, conf *ssh.ServerConfig) {
 		// "shell" request.
 		go func(in <-chan *ssh.Request) {
 			for req := range in {
-				req.Reply(req.Type == "pty-req" || req.Type == "shell", nil)
+				err = req.Reply(req.Type == "pty-req" || req.Type == "shell", nil)
+				if err != nil {
+					log.Errorln(err.Error())
+				}
 			}
 		}(requests)
 
