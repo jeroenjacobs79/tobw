@@ -27,9 +27,28 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:72f7bc975a18badcb4b05585929a12e042ab45cb0bee781aaab8044f39bd41f5"
+  digest = "1:c9e0b137902d857921fb87c28039a4af7e587970bd10c4fcec818d1559347d43"
+  name = "golang.org/x/crypto"
+  packages = [
+    "chacha20",
+    "curve25519",
+    "ed25519",
+    "ed25519/internal/edwards25519",
+    "internal/subtle",
+    "poly1305",
+    "ssh",
+  ]
+  pruneopts = "UT"
+  revision = "b544559bb6d1b5c62fba4af5e843ff542174f079"
+
+[[projects]]
+  branch = "master"
+  digest = "1:607da0d7cf677985496d5911647383193cce4c67ba4554c4a54607a6a6062c79"
   name = "golang.org/x/sys"
-  packages = ["unix"]
+  packages = [
+    "cpu",
+    "unix",
+  ]
   pruneopts = "UT"
   revision = "6d18c012aee9febd81bbf9806760c8c4480e870d"
 
@@ -51,6 +70,7 @@
   input-imports = [
     "github.com/mdp/qrterminal",
     "github.com/sirupsen/logrus",
+    "golang.org/x/crypto/ssh",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

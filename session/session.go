@@ -93,6 +93,5 @@ func Start(term *ansiterm.AnsiTerminal) {
 	}
 
 	term.Println(result)
-
 	return
 }
