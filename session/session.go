@@ -21,10 +21,15 @@ package session
 import (
 	"github.com/mdp/qrterminal"
 	"strings"
+	"time"
 	"tobw/ansiterm"
 )
 
 func Start(term *ansiterm.AnsiTerminal) {
+	// this delay seems to help with older DOS-based terminals running in DosBox.
+	time.Sleep(1*time.Second)
+
+	// start here
 	term.ClearScreen()
 	term.GotoXY(1, 1)
 	term.SetColor(ansiterm.FG_WHITE, true)
@@ -48,24 +53,36 @@ func Start(term *ansiterm.AnsiTerminal) {
 
 	// menu item
 	term.DisplayMenuItem('F', "Explore the forest")
-	term.Println()
+	term.Print("\t\t")
+	term.DisplayMenuItem('W', "Weapons 'R' Us")
+	term.Println("")
 
 	term.DisplayMenuItem('I', "Cockroach Inn")
+	term.Print("\t\t")
+	term.DisplayMenuItem('A', "Fashion armour store")
 	term.Println()
 
 	term.DisplayMenuItem('B', "Cheat'm and Crook Bank")
+	term.Print("\t")
+	term.DisplayMenuItem('T', "Training ground")
 	term.Println()
 
 	term.DisplayMenuItem('H', "Shaman's Healer Hut")
+	term.Print("\t\t")
+	term.DisplayMenuItem('Y', "Your stats")
 	term.Println()
 
-	term.DisplayMenuItem('F', "Fluffy Kitty Brothel")
+	term.DisplayMenuItem('K', "Fluffy Kitty Brothel")
+	term.Print("\t")
+	term.DisplayMenuItem('O', "Who's online?")
 	term.Println()
 
 	term.DisplayMenuItem('P', "Post Office")
+	term.Print("\t\t\t")
+	term.DisplayMenuItem('!', "Log off")
 	term.Println()
 
-	term.DisplayMenuItem('T', "Town Hall")
+	term.DisplayMenuItem('C', "City Hall")
 	term.Println()
 
 	// qr test
@@ -80,7 +97,7 @@ func Start(term *ansiterm.AnsiTerminal) {
 	}
 	// Taken from google example: https://github.com/google/google-authenticator/wiki/Key-Uri-Format
 	qrterminal.GenerateWithConfig("otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example", qrConfig)
-	term.Print(qrBuffer.String())
+	// term.Print(qrBuffer.String())
 
 	term.SetColor(ansiterm.FG_WHITE, false)
 	term.Print("\nPlease enter your real name: ")

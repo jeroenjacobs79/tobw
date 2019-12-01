@@ -204,7 +204,7 @@ func handleTelnetRequest(conn net.Conn) {
 	}()
 
 	// Read a bit of data to let the telnet negotiation finish. Ignore any actual data for now.
-	_, _ = telnetConn.Read(buf)
+	telnetConn.Read(buf)
 
 	session.Start(term)
 }
@@ -212,7 +212,6 @@ func handleTelnetRequest(conn net.Conn) {
 func handleRawRequest(conn net.Conn) {
 	log.Infof("%s - Connected", conn.RemoteAddr())
 	term := ansiterm.CreateAnsiTerminal(conn)
-	log.Traceln(term)
 
 	// Close the connection when you're done with it.
 	defer func() {
