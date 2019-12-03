@@ -27,7 +27,7 @@ import (
 
 func Start(term *ansiterm.AnsiTerminal) {
 	// this delay seems to help with older DOS-based terminals running in DosBox.
-	time.Sleep(1*time.Second)
+	time.Sleep(1 * time.Second)
 
 	// start here
 	term.ClearScreen()
@@ -48,46 +48,46 @@ func Start(term *ansiterm.AnsiTerminal) {
 	term.Printf("%s\n", line)
 
 	/*
-	term.SetColor(ansiterm.FG_GREEN, false)
-	term.Printf("People are flooding the square. You try to move to your destination, not afraid to use your elbows in the process...\n\n")
-	term.SetColor(ansiterm.FG_WHITE, true)
-	term.Printf("Choice your destination:\n\n")
+		term.SetColor(ansiterm.FG_GREEN, false)
+		term.Printf("People are flooding the square. You try to move to your destination, not afraid to use your elbows in the process...\n\n")
+		term.SetColor(ansiterm.FG_WHITE, true)
+		term.Printf("Choice your destination:\n\n")
 
 
-	// menu item
-	term.DisplayMenuItem('F', "Explore the forest")
-	term.Print("\t\t")
-	term.DisplayMenuItem('W', "Weapons 'R' Us")
-	term.Println("")
+		// menu item
+		term.DisplayMenuItem('F', "Explore the forest")
+		term.Print("\t\t")
+		term.DisplayMenuItem('W', "Weapons 'R' Us")
+		term.Println("")
 
-	term.DisplayMenuItem('I', "Cockroach Inn")
-	term.Print("\t\t")
-	term.DisplayMenuItem('A', "Fashion armour store")
-	term.Println()
+		term.DisplayMenuItem('I', "Cockroach Inn")
+		term.Print("\t\t")
+		term.DisplayMenuItem('A', "Fashion armour store")
+		term.Println()
 
-	term.DisplayMenuItem('B', "Cheat'm and Crook Bank")
-	term.Print("\t")
-	term.DisplayMenuItem('T', "Training ground")
-	term.Println()
+		term.DisplayMenuItem('B', "Cheat'm and Crook Bank")
+		term.Print("\t")
+		term.DisplayMenuItem('T', "Training ground")
+		term.Println()
 
-	term.DisplayMenuItem('H', "Shaman's Healer Hut")
-	term.Print("\t\t")
-	term.DisplayMenuItem('Y', "Your stats")
-	term.Println()
+		term.DisplayMenuItem('H', "Shaman's Healer Hut")
+		term.Print("\t\t")
+		term.DisplayMenuItem('Y', "Your stats")
+		term.Println()
 
-	term.DisplayMenuItem('K', "Fluffy Kitty Brothel")
-	term.Print("\t")
-	term.DisplayMenuItem('O', "Who's online?")
-	term.Println()
+		term.DisplayMenuItem('K', "Fluffy Kitty Brothel")
+		term.Print("\t")
+		term.DisplayMenuItem('O', "Who's online?")
+		term.Println()
 
-	term.DisplayMenuItem('P', "Post Office")
-	term.Print("\t\t\t")
-	term.DisplayMenuItem('!', "Log off")
-	term.Println()
+		term.DisplayMenuItem('P', "Post Office")
+		term.Print("\t\t\t")
+		term.DisplayMenuItem('!', "Log off")
+		term.Println()
 
-	term.DisplayMenuItem('C', "City Hall")
-	term.Println()
-*/
+		term.DisplayMenuItem('C', "City Hall")
+		term.Println()
+	*/
 	term.SendTextFile("ansi/citysquare.ans")
 	// qr test
 	var qrBuffer strings.Builder

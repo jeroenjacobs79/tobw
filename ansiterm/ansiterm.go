@@ -21,18 +21,18 @@ package ansiterm
 import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/text/encoding/charmap"
 	"io"
 	"io/ioutil"
 	"strings"
 	"unicode"
 	"unicode/utf8"
-	"golang.org/x/text/encoding/charmap"
 )
 
 type AnsiTerminal struct {
 	io.ReadWriteCloser
-	columns int
-	rows    int
+	columns     int
+	rows        int
 	Cp437toUtf8 bool
 }
 
@@ -325,4 +325,3 @@ func (t *AnsiTerminal) SendTextFile(path string) {
 		t.Write(privateBytes)
 	}
 }
-

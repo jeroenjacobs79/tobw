@@ -47,7 +47,6 @@ func main() {
 	wg.Add(1)
 	go termserve.StartListener(&wg, ":6000", termserve.RawTCP, false)
 
-
 	wg.Add(1)
 	go termserve.StartListener(&wg, ":5023", termserve.Telnet, true)
 
