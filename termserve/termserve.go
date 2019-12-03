@@ -53,7 +53,7 @@ func (t ConnectionType) String() (result string) {
 	return
 }
 
-func StartListener(wg *sync.WaitGroup, address string, c ConnectionType) {
+func StartListener(wg *sync.WaitGroup, address string, c ConnectionType, cp437ToUtf8 bool) {
 	// start telnet listener
 	log.Infof("Starting %s listener on address %s...", c, address)
 
@@ -83,9 +83,9 @@ func StartListener(wg *sync.WaitGroup, address string, c ConnectionType) {
 			// Handle connections in a new goroutine.
 			switch c {
 			case Telnet:
-				go handleTelnetRequest(conn)
+				go handleTelnetRequest(conn, cp437ToUtf8)
 			case RawTCP:
-				go handleRawRequest(conn)
+				go handleRawRequest(conn, cp437ToUtf8)
 			}
 
 		}
@@ -132,12 +132,12 @@ func StartListener(wg *sync.WaitGroup, address string, c ConnectionType) {
 				log.Errorln(err.Error())
 			}
 
-			go handleSshRequest(conn, config)
+			go handleSshRequest(conn, config, cp437ToUtf8)
 		}
 	}
 }
 
-func handleSshRequest(conn net.Conn, conf *ssh.ServerConfig) {
+func handleSshRequest(conn net.Conn, conf *ssh.ServerConfig, cp437ToUtf8 bool) {
 	log.Infof("%s - Connected", conn.RemoteAddr())
 	_, chans, reqs, err := ssh.NewServerConn(conn, conf)
 	if err != nil {
@@ -174,6 +174,7 @@ func handleSshRequest(conn net.Conn, conf *ssh.ServerConfig) {
 		}(requests)
 
 		term := ansiterm.CreateAnsiTerminal(channel)
+		term.Cp437toUtf8 = cp437ToUtf8
 		session.Start(term)
 		log.Infof("%s - Disconnected", conn.RemoteAddr())
 		err = term.Close()
@@ -184,12 +185,13 @@ func handleSshRequest(conn net.Conn, conf *ssh.ServerConfig) {
 	}
 }
 
-func handleTelnetRequest(conn net.Conn) {
+func handleTelnetRequest(conn net.Conn, cp437ToUtf8 bool) {
 	// Make a buffer to hold incoming data.
 	buf := make([]byte, 1024)
 	telnetConn := telnet.NewConnection(conn)
 	log.Infof("%s - Connected", telnetConn.RemoteAddr())
 	term := ansiterm.CreateAnsiTerminal(telnetConn)
+	term.Cp437toUtf8 = cp437ToUtf8
 	telnetConn.InstallResizeHandler(term.ResizeTerminal)
 	telnetConn.RequestTermSize()
 	log.Traceln(term)
@@ -209,9 +211,10 @@ func handleTelnetRequest(conn net.Conn) {
 	session.Start(term)
 }
 
-func handleRawRequest(conn net.Conn) {
+func handleRawRequest(conn net.Conn, cp437ToUtf8 bool) {
 	log.Infof("%s - Connected", conn.RemoteAddr())
 	term := ansiterm.CreateAnsiTerminal(conn)
+	term.Cp437toUtf8 = cp437ToUtf8
 
 	// Close the connection when you're done with it.
 	defer func() {

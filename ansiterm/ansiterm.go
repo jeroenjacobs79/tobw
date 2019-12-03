@@ -22,15 +22,18 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"io"
+	"io/ioutil"
 	"strings"
 	"unicode"
 	"unicode/utf8"
+	"golang.org/x/text/encoding/charmap"
 )
 
 type AnsiTerminal struct {
 	io.ReadWriteCloser
 	columns int
 	rows    int
+	Cp437toUtf8 bool
 }
 
 type FGColor byte
@@ -73,6 +76,18 @@ func CreateAnsiTerminal(device io.ReadWriteCloser) *AnsiTerminal {
 		rows:    24,
 	}
 	return &term
+}
+
+func (t *AnsiTerminal) Write(data []byte) (totalWritten int, err error) {
+	if t.Cp437toUtf8 {
+		result, err := charmap.CodePage437.NewDecoder().Bytes(data)
+		if err == nil {
+			totalWritten, err = t.ReadWriteCloser.Write(result)
+		}
+	} else {
+		totalWritten, err = t.ReadWriteCloser.Write(data)
+	}
+	return
 }
 
 func (t *AnsiTerminal) ResizeTerminal(w int, h int) {
@@ -303,3 +318,11 @@ func (t *AnsiTerminal) Input(size int, mode InputMode) (result string, err error
 	result = inputBuffer.String()
 	return
 }
+
+func (t *AnsiTerminal) SendTextFile(path string) {
+	privateBytes, err := ioutil.ReadFile(path)
+	if err == nil {
+		t.Write(privateBytes)
+	}
+}
+

@@ -42,13 +42,17 @@ func main() {
 	// start our listeners
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go termserve.StartListener(&wg, ":5000", termserve.RawTCP)
+	go termserve.StartListener(&wg, ":5000", termserve.RawTCP, true)
 
 	wg.Add(1)
-	go termserve.StartListener(&wg, ":5023", termserve.Telnet)
+	go termserve.StartListener(&wg, ":6000", termserve.RawTCP, false)
+
 
 	wg.Add(1)
-	go termserve.StartListener(&wg, ":5022", termserve.Ssh)
+	go termserve.StartListener(&wg, ":5023", termserve.Telnet, true)
+
+	wg.Add(1)
+	go termserve.StartListener(&wg, ":5022", termserve.Ssh, true)
 
 	wg.Wait()
 

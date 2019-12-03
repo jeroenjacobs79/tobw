@@ -46,10 +46,13 @@ func Start(term *ansiterm.AnsiTerminal) {
 	}
 
 	term.Printf("%s\n", line)
+
+	/*
 	term.SetColor(ansiterm.FG_GREEN, false)
 	term.Printf("People are flooding the square. You try to move to your destination, not afraid to use your elbows in the process...\n\n")
 	term.SetColor(ansiterm.FG_WHITE, true)
 	term.Printf("Choice your destination:\n\n")
+
 
 	// menu item
 	term.DisplayMenuItem('F', "Explore the forest")
@@ -84,7 +87,8 @@ func Start(term *ansiterm.AnsiTerminal) {
 
 	term.DisplayMenuItem('C', "City Hall")
 	term.Println()
-
+*/
+	term.SendTextFile("ansi/citysquare.ans")
 	// qr test
 	var qrBuffer strings.Builder
 	qrConfig := qrterminal.Config{
