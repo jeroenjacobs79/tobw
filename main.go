@@ -21,7 +21,7 @@ package main
 import (
 	log "github.com/sirupsen/logrus"
 	"sync"
-	"tobw/termserve"
+	"tobw/internal/termserve"
 )
 
 const (

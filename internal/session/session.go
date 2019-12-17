@@ -22,7 +22,7 @@ import (
 	"github.com/mdp/qrterminal"
 	"strings"
 	"time"
-	"tobw/ansiterm"
+	"tobw/internal/ansiterm"
 )
 
 func Start(term *ansiterm.AnsiTerminal) {

@@ -24,9 +24,9 @@ import (
 	"io/ioutil"
 	"net"
 	"sync"
-	"tobw/ansiterm"
-	"tobw/session"
-	"tobw/telnet"
+	"tobw/internal/ansiterm"
+	"tobw/internal/session"
+	"tobw/internal/telnet"
 )
 
 type ConnectionType int
