@@ -23,7 +23,7 @@ build: $(BINARY_NAME)_linux_amd64 \
 	$(BINARY_NAME)_windows_amd64 \
 	$(BINARY_NAME)_freebsd_amd64 \
 	$(BINARY_NAME)_openbsd_amd64 \
-	$(BINARY_NAME)_openbsd_amd64 \
+	$(BINARY_NAME)_netbsd_amd64 \
 	$(BINARY_NAME)_linux_386 \
 	$(BINARY_NAME)_darwin_386 \
 	$(BINARY_NAME)_windows_386 \
@@ -32,7 +32,9 @@ build: $(BINARY_NAME)_linux_amd64 \
 	$(BINARY_NAME)_netbsd_386 \
 	$(BINARY_NAME)_linux_arm \
 	$(BINARY_NAME)_linux_arm64 \
-	$(BINARY_NAME)_freebsd_arm
+	$(BINARY_NAME)_freebsd_arm \
+	$(BINARY_NAME)_openbsd_arm \
+	$(BINARY_NAME)_netbsd_arm \
 
 
 clean:
@@ -133,7 +135,7 @@ $(BINARY_NAME)_netbsd_386:
 $(BINARY_NAME)_openbsd_386:
 	CGO_ENABLED=0 GOOS=openbsd GOARCH=386 $(GOBUILD) -o bin/$@ -v -ldflags=$(LD_FLAGS)
 
-# For ARM targets, only Linux and FreeBSD support for now.
+# For ARM targets, only Linux and *BSD support for now.
 $(BINARY_NAME)_linux_arm:
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm $(GOBUILD) -o bin/$@ -v -ldflags=$(LD_FLAGS)
 
@@ -142,4 +144,10 @@ $(BINARY_NAME)_linux_arm64:
 
 $(BINARY_NAME)_freebsd_arm:
 	CGO_ENABLED=0 GOOS=freebsd GOARCH=arm $(GOBUILD) -o bin/$@ -v -ldflags=$(LD_FLAGS)
+
+$(BINARY_NAME)_openbsd_arm:
+	CGO_ENABLED=0 GOOS=openbsd GOARCH=arm $(GOBUILD) -o bin/$@ -v -ldflags=$(LD_FLAGS)
+
+$(BINARY_NAME)_netbsd_arm:
+	CGO_ENABLED=0 GOOS=netbsd GOARCH=arm $(GOBUILD) -o bin/$@ -v -ldflags=$(LD_FLAGS)
 
