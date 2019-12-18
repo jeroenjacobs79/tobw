@@ -1,7 +1,14 @@
 GOBUILD=go build
 BINARY_NAME=tobw
+
+# linker flags for stripping debug info and injecting version info
 VERSION=$(shell git describe --tags --always --long --dirty)
 LD_FLAGS="-s -w -X main.Version=$(VERSION)"
+
+# Used for help output
+HELP_SPACING=15
+HELP_COLOR=33
+HELP_FORMATSTRING="\033[$(HELP_COLOR)m%-$(HELP_SPACING)s \033[00m%s.\n"
 
 GO_FILES?=$$(find . -name '*.go' | grep -v vendor)
 EXTERNAL_TOOLS=\
@@ -75,18 +82,18 @@ bootstrap:
 	@echo "*** Done ***"
 
 help:
-	@echo "*** Supported commands ***"
-	@echo "make bootstrap:        Install tools needed for build."
-	@echo "make dep:              Install libraries needed for compilation."
-	@echo "make build:            Compile for all targets."
-	@echo "make vet:              Checks code for common mistakes."
-	@echo "make fmt:              Fix formatting on .go files"
-	@echo "make check_spelling:   Show potential spelling mistakes."
-	@echo "make fix_spelling:     Correct detected spelling mistakes."
-	@echo "make local:            Build executable for your OS, for testing purposes."
-	@echo "make clean:            Clean your working directory."
-	@echo "*** Done ***"
-
+	@printf "\n*** Available make targets ***\n\n"
+	@printf $(HELP_FORMATSTRING) "help" "This message"
+	@printf $(HELP_FORMATSTRING) "bootstrap" "Install tools needed for build"
+	@printf $(HELP_FORMATSTRING) "dep" "Install libraries needed for compilation"
+	@printf $(HELP_FORMATSTRING) "build" "Compile for all targets"
+	@printf $(HELP_FORMATSTRING) "vet" "Checks code for common mistakes"
+	@printf $(HELP_FORMATSTRING) "fmt" "Fix formatting on .go files"
+	@printf $(HELP_FORMATSTRING) "check_spelling" "Show potential spelling mistakes"
+	@printf $(HELP_FORMATSTRING) "fix_spelling" "Correct detected spelling mistakes"
+	@printf $(HELP_FORMATSTRING) "local" "Build executable for your OS, for testing purposes"
+	@printf $(HELP_FORMATSTRING) "clean" "Clean your working directory"
+	@printf "\n*** End ***\n\n"
 
 # Compile common amd64 platforms.
 $(BINARY_NAME)_darwin_amd64:
