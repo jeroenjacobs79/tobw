@@ -21,26 +21,25 @@ package cfgparse
 type ListenerType int
 
 const (
-	TCP_RAW ListenerType = 0
-	TCP_SSH ListenerType = 1
+	TCP_RAW    ListenerType = 0
+	TCP_SSH    ListenerType = 1
 	TCP_TELNET ListenerType = 2
 )
 
 type Listener struct {
-	address string
-	port uint16
+	address    string
+	port       uint16
 	listenType ListenerType
 }
 
-
 type DatabaseConfig struct {
-	host string
-	port uint16
+	host     string
+	port     uint16
 	database string
-	user string
+	user     string
 	password string
 }
 
 func ParseConfig(configFile string) (listeners []Listener, dbConfig DatabaseConfig) {
-	
+
 }
