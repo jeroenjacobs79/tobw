@@ -85,7 +85,7 @@ type Conn struct {
 	// used during telnet command processing. See ConnectionState constants above.
 	// We need to store the state across multiple reads. This seemed like a good spot.
 	readState ConnectionState
-	// Bytes received for sub negotation. We also need to store this across multiple reads.
+	// Bytes received for sub negotiation. We also need to store this across multiple reads.
 	subNegBuffer bytes.Buffer
 	// term info we received
 	resizeHandler func(int, int)
@@ -190,7 +190,7 @@ func (c *Conn) Read(data []byte) (int, error) {
 	destIndex := 0
 	buffer := make([]byte, len(data)) // make a new buffer for reading data, same size as original one
 	tempRead, err := c.Conn.Read(buffer)
-	// process all bytes that have been read, even if an error occured.
+	// process all bytes that have been read, even if an error occurred.
 	// This seems to be a recommended approach:
 	//
 	// https://golang.org/pkg/io/
