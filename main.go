@@ -25,9 +25,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// will be replaced during build-phase with actual git-based version info
+var Version = "local"
+
 const (
 	APP_NAME = "Tale of the Black Wyvern"
-	APP_CODE = "TOBW"
 )
 
 func main() {
@@ -38,8 +40,7 @@ func main() {
 	// set log level
 	log.SetLevel(log.InfoLevel)
 	// startup message
-	log.Infof("%s (%s) is starting up...", APP_NAME, APP_CODE)
-
+	log.Infof("%s (version %s) is starting up...", APP_NAME, Version)
 	// start our listeners
 	var wg sync.WaitGroup
 	wg.Add(1)
