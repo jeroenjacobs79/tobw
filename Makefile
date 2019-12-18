@@ -4,7 +4,8 @@ BINARY_NAME=tobw
 GO_FILES?=$$(find . -name '*.go' | grep -v vendor)
 EXTERNAL_TOOLS=\
 	golang.org/x/tools/cmd/goimports \
-	github.com/golang/dep/cmd/dep
+	github.com/golang/dep/cmd/dep \
+	github.com/client9/misspell/cmd/misspell
 
 all: build
 
@@ -34,6 +35,16 @@ clean:
 fmt:
 	@echo "*** Applying gofmt on all .go files (excluding vendor)... ***"
 	@goimports -w $(GO_FILES)
+	@echo "*** Done ***"
+
+check_spelling:
+	@echo "*** Check for common spelling mistakes in .go files... ***"
+	@misspell -error $(GO_FILES)
+	@echo "*** Done ***"
+
+fix_spelling:
+	@echo "*** Fix any encountered spelling mistakes in .go files... ***"
+	@misspell -w $(GO_FILES)
 	@echo "*** Done ***"
 
 vet:
