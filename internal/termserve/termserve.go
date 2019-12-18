@@ -19,14 +19,15 @@
 package termserve
 
 import (
-	log "github.com/sirupsen/logrus"
-	"golang.org/x/crypto/ssh"
 	"io/ioutil"
 	"net"
 	"sync"
 	"tobw/internal/ansiterm"
 	"tobw/internal/session"
 	"tobw/internal/telnet"
+
+	log "github.com/sirupsen/logrus"
+	"golang.org/x/crypto/ssh"
 )
 
 type ConnectionType int

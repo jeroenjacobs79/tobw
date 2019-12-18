@@ -19,10 +19,11 @@
 package session
 
 import (
-	"github.com/mdp/qrterminal"
 	"strings"
 	"time"
 	"tobw/internal/ansiterm"
+
+	"github.com/mdp/qrterminal"
 )
 
 func Start(term *ansiterm.AnsiTerminal) {

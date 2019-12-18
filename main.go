@@ -19,9 +19,10 @@
 package main
 
 import (
-	log "github.com/sirupsen/logrus"
 	"sync"
 	"tobw/internal/termserve"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const (

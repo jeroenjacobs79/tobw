@@ -21,8 +21,9 @@ package telnet
 import (
 	"bytes"
 	"encoding/binary"
-	log "github.com/sirupsen/logrus"
 	"net"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type ConnectionState int

@@ -20,13 +20,14 @@ package ansiterm
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"golang.org/x/text/encoding/charmap"
 	"io"
 	"io/ioutil"
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	log "github.com/sirupsen/logrus"
+	"golang.org/x/text/encoding/charmap"
 )
 
 type AnsiTerminal struct {
