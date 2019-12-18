@@ -17,3 +17,7 @@
 # exclude main binaries
 bin/
 
+# exclude temp binaries for local testing
+tobw
+tobw.exe
+
