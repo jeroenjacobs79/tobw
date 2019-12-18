@@ -58,7 +58,6 @@ vet:
 
 dep:
 	@echo "*** Installing all dependencies... ***"
-	@mkdir -p bin
 	@dep ensure
 	@echo "*** Done ***"
 
