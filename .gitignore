@@ -21,3 +21,6 @@ bin/
 tobw
 tobw.exe
 
+#logs
+*.log
+

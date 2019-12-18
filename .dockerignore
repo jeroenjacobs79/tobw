@@ -14,5 +14,10 @@
 # Goland folder
 .idea/
 
-# exclude main binary
-/tobw
+# exclude main binaries
+tobw
+tobw.exe
+bin/
+
+# log files
+*.log
