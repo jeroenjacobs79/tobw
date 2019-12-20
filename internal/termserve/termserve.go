@@ -19,6 +19,7 @@
 package termserve
 
 import (
+	"encoding/binary"
 	"io/ioutil"
 	"net"
 	"sync"
@@ -58,7 +59,7 @@ func StartListener(wg *sync.WaitGroup, address string, c ConnectionType, cp437To
 	// start telnet listener
 	log.Infof("Starting %s listener on address %s...", c, address)
 
-	// listeners for telnet and ssh
+	// listeners for telnet and raw tcp
 	if c != Ssh {
 		srv, err := net.Listen("tcp", address)
 		if err != nil {
@@ -138,6 +139,12 @@ func StartListener(wg *sync.WaitGroup, address string, c ConnectionType, cp437To
 	}
 }
 
+func parseSize(data []byte) ( w uint32, h uint32){
+	w = binary.BigEndian.Uint32(data)
+	h = binary.BigEndian.Uint32(data[4:])
+	return
+}
+
 func handleSshRequest(conn net.Conn, conf *ssh.ServerConfig, cp437ToUtf8 bool) {
 	log.Infof("%s - Connected", conn.RemoteAddr())
 	_, chans, reqs, err := ssh.NewServerConn(conn, conf)
@@ -162,20 +169,40 @@ func handleSshRequest(conn net.Conn, conf *ssh.ServerConfig, cp437ToUtf8 bool) {
 			log.Errorln(err.Error())
 		}
 
+		term := ansiterm.CreateAnsiTerminal(channel)
+		term.Cp437toUtf8 = cp437ToUtf8
+
+
 		// Sessions have out-of-band requests such as "shell",
 		// "pty-req" and "env".  Here we handle only the
 		// "shell" request.
 		go func(in <-chan *ssh.Request) {
 			for req := range in {
-				err = req.Reply(req.Type == "pty-req" || req.Type == "shell", nil)
-				if err != nil {
-					log.Errorln(err.Error())
+				ok := false
+				switch req.Type {
+				case "pty-req":
+					termLength := int(req.Payload[3]) // this is very naive, as the actual length is encoded as vlint32: http://lists.w3.org/Archives/Public/ietf-tls/msg02555.html
+					w,h:= parseSize(req.Payload[termLength+4:termLength+12])
+					log.Debugf("%s - receive pty-request for terminal size w:%d h:%d", conn.RemoteAddr(), w, h)
+					term.ResizeTerminal(int(w),int(h))
+					ok = true
+				case "window-change":
+					w,h := parseSize(req.Payload[:8])
+					log.Debugf("%s - receive window-change for terminal size w:%d h:%d", conn.RemoteAddr(), w, h)
+					term.ResizeTerminal(int(w),int(h))
+				case "shell":
+					ok = true
+
+				}
+				if req.WantReply {
+					err = req.Reply(ok, nil)
+					if err != nil {
+						log.Errorln(err.Error())
+					}
 				}
 			}
 		}(requests)
 
-		term := ansiterm.CreateAnsiTerminal(channel)
-		term.Cp437toUtf8 = cp437ToUtf8
 		session.Start(term)
 		log.Infof("%s - Disconnected", conn.RemoteAddr())
 		err = term.Close()
