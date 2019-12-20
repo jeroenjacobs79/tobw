@@ -139,7 +139,7 @@ func StartListener(wg *sync.WaitGroup, address string, c ConnectionType, cp437To
 	}
 }
 
-func parseSize(data []byte) ( w uint32, h uint32){
+func parseSize(data []byte) (w uint32, h uint32) {
 	w = binary.BigEndian.Uint32(data)
 	h = binary.BigEndian.Uint32(data[4:])
 	return
@@ -172,7 +172,6 @@ func handleSshRequest(conn net.Conn, conf *ssh.ServerConfig, cp437ToUtf8 bool) {
 		term := ansiterm.CreateAnsiTerminal(channel)
 		term.Cp437toUtf8 = cp437ToUtf8
 
-
 		// Sessions have out-of-band requests such as "shell",
 		// "pty-req" and "env".  Here we handle only the
 		// "shell" request.
@@ -182,14 +181,14 @@ func handleSshRequest(conn net.Conn, conf *ssh.ServerConfig, cp437ToUtf8 bool) {
 				switch req.Type {
 				case "pty-req":
 					termLength := int(req.Payload[3]) // this is very naive, as the actual length is encoded as vlint32: http://lists.w3.org/Archives/Public/ietf-tls/msg02555.html
-					w,h:= parseSize(req.Payload[termLength+4:termLength+12])
+					w, h := parseSize(req.Payload[termLength+4 : termLength+12])
 					log.Debugf("%s - receive pty-request for terminal size w:%d h:%d", conn.RemoteAddr(), w, h)
-					term.ResizeTerminal(int(w),int(h))
+					term.ResizeTerminal(int(w), int(h))
 					ok = true
 				case "window-change":
-					w,h := parseSize(req.Payload[:8])
+					w, h := parseSize(req.Payload[:8])
 					log.Debugf("%s - receive window-change for terminal size w:%d h:%d", conn.RemoteAddr(), w, h)
-					term.ResizeTerminal(int(w),int(h))
+					term.ResizeTerminal(int(w), int(h))
 				case "shell":
 					ok = true
 
