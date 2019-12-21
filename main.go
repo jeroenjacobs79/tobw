@@ -19,7 +19,10 @@
 package main
 
 import (
+	"fmt"
+	"os"
 	"sync"
+	"tobw/internal/cfgparse"
 	"tobw/internal/termserve"
 
 	log "github.com/sirupsen/logrus"
@@ -33,28 +36,37 @@ const (
 )
 
 func main() {
+	// parse commandline for config file. Error if not specified.
+	if len(os.Args) != 2 {
+		fmt.Printf("%s (version %s)\n", APP_NAME, Version)
+		fmt.Println("Error: No config file specified.")
+		fmt.Println()
+		fmt.Println("Usage:", os.Args[0], "/path/to/config.yaml")
+		os.Exit(1)
+	}
+
+	// start parsing config
+	programOptions, listeners, err := cfgparse.ParseConfig(os.Args[1])
+	if err != nil {
+		log.Error(err)
+		os.Exit(2)
+	}
+
 	// set log format to include timestamp, even when TTY is attached.
 	log.SetFormatter(&log.TextFormatter{
 		FullTimestamp: true},
 	)
 	// set log level
-	log.SetLevel(log.InfoLevel)
+	log.SetLevel(programOptions.LogLevel)
+
 	// startup message
 	log.Infof("%s (version %s) is starting up...", APP_NAME, Version)
 	// start our listeners
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go termserve.StartListener(&wg, ":5000", termserve.RawTCP, true)
-
-	wg.Add(1)
-	go termserve.StartListener(&wg, ":6000", termserve.RawTCP, false)
-
-	wg.Add(1)
-	go termserve.StartListener(&wg, ":5023", termserve.Telnet, true)
-
-	wg.Add(1)
-	go termserve.StartListener(&wg, ":5022", termserve.Ssh, true)
-
+	for _, listener := range listeners {
+		wg.Add(1)
+		go termserve.StartListener(&wg, fmt.Sprintf("%s:%d", listener.Address, listener.Port), listener.ListenType, listener.ConvertUTF8)
+	}
 	wg.Wait()
 
 }

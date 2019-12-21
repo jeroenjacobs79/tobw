@@ -34,20 +34,20 @@ import (
 type ConnectionType int
 
 const (
-	Telnet ConnectionType = iota
-	RawTCP
-	Ssh
+	TCP_TELNET ConnectionType = iota
+	TCP_RAW
+	TCP_SSH
 )
 
 func (t ConnectionType) String() (result string) {
 	switch t {
-	case Telnet:
+	case TCP_TELNET:
 		result = "telnet"
 
-	case RawTCP:
+	case TCP_RAW:
 		result = "raw"
 
-	case Ssh:
+	case TCP_SSH:
 		result = "ssh"
 	default:
 		result = "unknown"
@@ -60,7 +60,7 @@ func StartListener(wg *sync.WaitGroup, address string, c ConnectionType, cp437To
 	log.Infof("Starting %s listener on address %s...", c, address)
 
 	// listeners for telnet and raw tcp
-	if c != Ssh {
+	if c != TCP_SSH {
 		srv, err := net.Listen("tcp", address)
 		if err != nil {
 			log.Fatal(err.Error())
@@ -84,9 +84,9 @@ func StartListener(wg *sync.WaitGroup, address string, c ConnectionType, cp437To
 			}
 			// Handle connections in a new goroutine.
 			switch c {
-			case Telnet:
+			case TCP_TELNET:
 				go handleTelnetRequest(conn, cp437ToUtf8)
-			case RawTCP:
+			case TCP_RAW:
 				go handleRawRequest(conn, cp437ToUtf8)
 			}
 

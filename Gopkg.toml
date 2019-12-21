@@ -44,3 +44,7 @@
 [[constraint]]
   name = "golang.org/x/text"
   version = "0.3.2"
+
+[[constraint]]
+  name = "gopkg.in/yaml.v2"
+  version = "2.2.7"

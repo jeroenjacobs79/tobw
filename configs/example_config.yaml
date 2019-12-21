@@ -1,25 +1,27 @@
-
-# network listener configuration
-network:
-  listener:
-    - type: "tcp"
-      port: 5050
-      unicode_convert: false
-      address: "0.0.0.0"
-    - type: "ssh"
-      port: 5022
-      unicode_convert: true
-      address: "0.0.0.0"
-    - type: "telnet"
-      port: 5023
-      unicode_convert: true
-      address: "0.0.0.0"
-
-# Postgres database config
-
 database:
   host: "localhost"
-  database: "tobw"
+  name: "tobw"
   user: "tobw"
   password: "tobw"
   port: 5432
+
+options:
+  logLevel: "info"
+
+listeners:
+  - address: "0.0.0.0"
+    port: 5000
+    protocol: "raw"
+    convertUTF8: true
+  - address: "0.0.0.0"
+    port: 5022
+    protocol: "ssh"
+    convertUTF8: true
+  - address: "0.0.0.0"
+    port: 5023
+    protocol: "telnet"
+    convertUTF8: true
+  - address: "0.0.0.0"
+    port: 6000
+    protocol: "raw"
+    convertUTF8: false
