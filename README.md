@@ -2,9 +2,10 @@
 
 ## License and copyright
 
-### Main
+### Main software
+
 Tale of the Black Wyvern
-Copyright (C) 2019  Jeroen Jacobs/Head In Cloud BVBA
+Copyright (C) 2019 Jeroen Jacobs/Head In Cloud BVBA
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
