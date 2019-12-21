@@ -7,6 +7,8 @@ database:
 
 options:
   logLevel: "info"
+  #location of ssh host key to use. Either full path, or relative path from current work directory.
+  sshPrivateKey: "security/tobw_rsa"
 
 listeners:
   - address: "0.0.0.0"

@@ -24,3 +24,6 @@ tobw.exe
 #logs
 *.log
 
+# ssh key folder
+security/
+

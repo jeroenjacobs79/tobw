@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"os"
 	"sync"
-	"tobw/internal/cfgparse"
+	"tobw/internal/config"
 	"tobw/internal/termserve"
 
 	log "github.com/sirupsen/logrus"
@@ -46,7 +46,7 @@ func main() {
 	}
 
 	// start parsing config
-	programOptions, listeners, err := cfgparse.ParseConfig(os.Args[1])
+	listeners, err := config.ParseConfig(os.Args[1])
 	if err != nil {
 		log.Error(err)
 		os.Exit(2)
@@ -57,7 +57,7 @@ func main() {
 		FullTimestamp: true},
 	)
 	// set log level
-	log.SetLevel(programOptions.LogLevel)
+	log.SetLevel(config.AppOptions.LogLevel)
 
 	// startup message
 	log.Infof("%s (version %s) is starting up...", APP_NAME, Version)

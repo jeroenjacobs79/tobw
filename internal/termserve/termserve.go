@@ -24,6 +24,7 @@ import (
 	"net"
 	"sync"
 	"tobw/internal/ansiterm"
+	"tobw/internal/config"
 	"tobw/internal/session"
 	"tobw/internal/telnet"
 
@@ -31,36 +32,12 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-type ConnectionType int
-
-const (
-	TCP_TELNET ConnectionType = iota
-	TCP_RAW
-	TCP_SSH
-)
-
-func (t ConnectionType) String() (result string) {
-	switch t {
-	case TCP_TELNET:
-		result = "telnet"
-
-	case TCP_RAW:
-		result = "raw"
-
-	case TCP_SSH:
-		result = "ssh"
-	default:
-		result = "unknown"
-	}
-	return
-}
-
-func StartListener(wg *sync.WaitGroup, address string, c ConnectionType, cp437ToUtf8 bool) {
+func StartListener(wg *sync.WaitGroup, address string, c config.ConnectionType, cp437ToUtf8 bool) {
 	// start telnet listener
 	log.Infof("Starting %s listener on address %s...", c, address)
 
 	// listeners for telnet and raw tcp
-	if c != TCP_SSH {
+	if c != config.TCP_SSH {
 		srv, err := net.Listen("tcp", address)
 		if err != nil {
 			log.Fatal(err.Error())
@@ -84,9 +61,9 @@ func StartListener(wg *sync.WaitGroup, address string, c ConnectionType, cp437To
 			}
 			// Handle connections in a new goroutine.
 			switch c {
-			case TCP_TELNET:
+			case config.TCP_TELNET:
 				go handleTelnetRequest(conn, cp437ToUtf8)
-			case TCP_RAW:
+			case config.TCP_RAW:
 				go handleRawRequest(conn, cp437ToUtf8)
 			}
 
@@ -97,10 +74,10 @@ func StartListener(wg *sync.WaitGroup, address string, c ConnectionType, cp437To
 		// This adapted from the example here: https://godoc.org/golang.org/x/crypto/ssh#example-NewServerConn
 		// This works totally different from the telnet/raw implementation.
 
-		config := &ssh.ServerConfig{
+		sshConfig := &ssh.ServerConfig{
 			NoClientAuth: true,
 		}
-		privateBytes, err := ioutil.ReadFile("/Users/jeroenjacobs/.ssh/tobw_rsa")
+		privateBytes, err := ioutil.ReadFile(config.AppOptions.SSHPrivateKey)
 		if err != nil {
 			log.Fatalln("Failed to load private key:", err)
 		}
@@ -108,7 +85,7 @@ func StartListener(wg *sync.WaitGroup, address string, c ConnectionType, cp437To
 		if err != nil {
 			log.Fatalln("Failed to parse private key:", err)
 		}
-		config.AddHostKey(privateKey)
+		sshConfig.AddHostKey(privateKey)
 
 		// start our actual listener
 		srv, err := net.Listen("tcp", address)
@@ -134,7 +111,7 @@ func StartListener(wg *sync.WaitGroup, address string, c ConnectionType, cp437To
 				log.Errorln(err.Error())
 			}
 
-			go handleSshRequest(conn, config, cp437ToUtf8)
+			go handleSshRequest(conn, sshConfig, cp437ToUtf8)
 		}
 	}
 }

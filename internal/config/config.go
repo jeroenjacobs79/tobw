@@ -16,18 +16,41 @@
  *
  */
 
-package cfgparse
+package config
 
 import (
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"strings"
-	"tobw/internal/termserve"
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
+
+type ConnectionType int
+
+const (
+	TCP_TELNET ConnectionType = iota
+	TCP_RAW
+	TCP_SSH
+)
+
+func (t ConnectionType) String() (result string) {
+	switch t {
+	case TCP_TELNET:
+		result = "telnet"
+
+	case TCP_RAW:
+		result = "raw"
+
+	case TCP_SSH:
+		result = "ssh"
+	default:
+		result = "unknown"
+	}
+	return
+}
 
 // structure used for the yaml parsing
 type Config struct {
@@ -39,7 +62,8 @@ type Config struct {
 		Port     int
 	}
 	Options struct {
-		LogLevel string `yaml:"logLevel"`
+		LogLevel      string `yaml:"logLevel"`
+		SSHPrivateKey string `yaml:"sshPrivateKey"`
 	}
 
 	Listeners []struct {
@@ -52,14 +76,15 @@ type Config struct {
 
 // final structure for program options
 type ProgramOptions struct {
-	LogLevel log.Level
+	LogLevel      log.Level
+	SSHPrivateKey string
 }
 
 // final structure for listener config
 type Listener struct {
 	Address     string
 	Port        uint16
-	ListenType  termserve.ConnectionType
+	ListenType  ConnectionType
 	ConvertUTF8 bool
 }
 
@@ -72,40 +97,44 @@ type DatabaseConfig struct {
 	Password string
 }
 
-func ParseConfig(configFile string) (*ProgramOptions, []Listener, error) {
+// package variables for config
+var (
+	AppOptions = ProgramOptions{
+		LogLevel: log.InfoLevel,
+	}
+)
+
+func ParseConfig(configFile string) ([]Listener, error) {
 	configData, err := ioutil.ReadFile(configFile)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	var config Config
 	err = yaml.Unmarshal(configData, &config)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	log.Trace(config)
-
-	programOptions := ProgramOptions{
-		LogLevel: log.InfoLevel,
-	}
 
 	// validate program options
 	switch strings.ToLower(config.Options.LogLevel) {
 	case "info":
-		programOptions.LogLevel = log.InfoLevel
+		AppOptions.LogLevel = log.InfoLevel
 	case "debug":
-		programOptions.LogLevel = log.DebugLevel
+		AppOptions.LogLevel = log.DebugLevel
 	case "trace":
-		programOptions.LogLevel = log.TraceLevel
+		AppOptions.LogLevel = log.TraceLevel
 	case "error":
-		programOptions.LogLevel = log.ErrorLevel
+		AppOptions.LogLevel = log.ErrorLevel
 	default:
 		// Unknown level, generate error
-		return nil, nil, errors.New(fmt.Sprintf("Invalid value for log-level. Valid values are: info, error, debug, trace. Received value: %s", config.Options.LogLevel))
+		return nil, errors.New(fmt.Sprintf("Invalid value for log-level. Valid values are: info, error, debug, trace. Received value: %s", config.Options.LogLevel))
 	}
-
+	// set private key for ssh listeners
+	AppOptions.SSHPrivateKey = config.Options.SSHPrivateKey
 	// validate listener configuration
 	if len(config.Listeners) == 0 {
-		return nil, nil, errors.New("No listeners are defined in the configuration file.")
+		return nil, errors.New("No listeners are defined in the configuration file.")
 	}
 	listeners := []Listener{}
 	for _, cfgListener := range config.Listeners {
@@ -114,7 +143,7 @@ func ParseConfig(configFile string) (*ProgramOptions, []Listener, error) {
 			l := Listener{
 				Address:     cfgListener.Address,
 				Port:        cfgListener.Port,
-				ListenType:  termserve.TCP_TELNET,
+				ListenType:  TCP_TELNET,
 				ConvertUTF8: cfgListener.ConvertUTF8,
 			}
 			listeners = append(listeners, l)
@@ -122,7 +151,7 @@ func ParseConfig(configFile string) (*ProgramOptions, []Listener, error) {
 			l := Listener{
 				Address:     cfgListener.Address,
 				Port:        cfgListener.Port,
-				ListenType:  termserve.TCP_SSH,
+				ListenType:  TCP_SSH,
 				ConvertUTF8: cfgListener.ConvertUTF8,
 			}
 			listeners = append(listeners, l)
@@ -131,14 +160,14 @@ func ParseConfig(configFile string) (*ProgramOptions, []Listener, error) {
 			l := Listener{
 				Address:     cfgListener.Address,
 				Port:        cfgListener.Port,
-				ListenType:  termserve.TCP_RAW,
+				ListenType:  TCP_RAW,
 				ConvertUTF8: cfgListener.ConvertUTF8,
 			}
 			listeners = append(listeners, l)
 
 		default:
-			return nil, nil, errors.New(fmt.Sprintf("Invalid value for protocol. Valid values are: ssh, telnet, raw. Received value: %s", cfgListener.Protocol))
+			return nil, errors.New(fmt.Sprintf("Invalid value for protocol. Valid values are: ssh, telnet, raw. Received value: %s", cfgListener.Protocol))
 		}
 	}
-	return &programOptions, listeners, nil
+	return listeners, nil
 }
