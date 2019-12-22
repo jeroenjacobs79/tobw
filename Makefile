@@ -2,7 +2,7 @@ GOBUILD=go build
 BINARY_NAME=tobw
 
 # linker flags for stripping debug info and injecting version info
-VERSION=$(shell git describe --tags --always --long --dirty)
+VERSION=$(shell git describe --tags --always --dirty)
 LD_FLAGS="-s -w -X main.Version=$(VERSION)"
 
 # Used for help output
