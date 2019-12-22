@@ -19,7 +19,7 @@ package session
 import (
 	"strings"
 	"time"
-	"tobw/internal/ansiterm"
+	"github.com/jeroenjacobs79/tobw/internal/ansiterm"
 
 	"github.com/mdp/qrterminal"
 )

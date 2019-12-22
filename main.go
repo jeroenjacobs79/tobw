@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"os"
 	"sync"
-	"tobw/internal/config"
-	"tobw/internal/termserve"
+	"github.com/jeroenjacobs79/tobw/internal/config"
+	"github.com/jeroenjacobs79/tobw/internal/termserve"
 
 	log "github.com/sirupsen/logrus"
 )
