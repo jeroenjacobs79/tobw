@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/jeroenjacobs79/tobw.svg?branch=develop)](https://travis-ci.com/jeroenjacobs79/tobw)
+
 # Tale of the Black Wyvern
 
 ## License and copyright
