@@ -14,8 +14,7 @@ GO_FILES?=$$(find . -name '*.go' | grep -v vendor)
 EXTERNAL_TOOLS=\
 	golang.org/x/tools/cmd/goimports \
 	github.com/golang/dep/cmd/dep \
-	github.com/client9/misspell/cmd/misspell \
-	github.com/guilhem/bump
+	github.com/client9/misspell/cmd/misspell
 
 all: build
 
@@ -97,16 +96,6 @@ help:
 	@printf $(HELP_FORMATSTRING) "local" "Build executable for your OS, for testing purposes"
 	@printf $(HELP_FORMATSTRING) "clean" "Clean your working directory"
 	@printf "\n*** End ***\n\n"
-
-# version bumping stuff
-bump-patch:
-    bump patch
-
-bump-minor:
-    bump patch
-
-bump-major:
-    bump major
 
 # Compile common amd64 platforms.
 $(BINARY_NAME)_darwin_amd64:
