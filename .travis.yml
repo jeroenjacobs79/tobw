@@ -1,6 +1,7 @@
 dist: bionic
 
 language: go
+go_import_path: tobw
 
 go:
   - 1.12.x
