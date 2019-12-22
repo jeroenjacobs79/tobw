@@ -1,11 +1,11 @@
 dist: bionic
 
 language: go
-#go_import_path: tobw
 
 go:
   - 1.12.x
   - 1.13.x
+  - master
 
 before_install:
   - make bootstrap
