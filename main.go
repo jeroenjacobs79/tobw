@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"os"
 	"sync"
+
 	"github.com/jeroenjacobs79/tobw/internal/config"
 	"github.com/jeroenjacobs79/tobw/internal/termserve"
-
 	log "github.com/sirupsen/logrus"
 )
 

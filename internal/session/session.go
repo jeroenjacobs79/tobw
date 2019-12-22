@@ -19,8 +19,8 @@ package session
 import (
 	"strings"
 	"time"
-	"github.com/jeroenjacobs79/tobw/internal/ansiterm"
 
+	"github.com/jeroenjacobs79/tobw/internal/ansiterm"
 	"github.com/mdp/qrterminal"
 )
 

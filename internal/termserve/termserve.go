@@ -21,11 +21,11 @@ import (
 	"io/ioutil"
 	"net"
 	"sync"
+
 	"github.com/jeroenjacobs79/tobw/internal/ansiterm"
 	"github.com/jeroenjacobs79/tobw/internal/config"
 	"github.com/jeroenjacobs79/tobw/internal/session"
 	"github.com/jeroenjacobs79/tobw/internal/telnet"
-
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 )
