@@ -1,9 +1,12 @@
 GOBUILD=go build
+GOX=gox
 BINARY_NAME=tobw
 
-# linker flags for stripping debug info and injecting version info
 VERSION=$(shell git describe --tags --always --dirty)
+# linker flags for stripping debug info and injecting version info
 LD_FLAGS="-s -w -X main.Version=$(VERSION)"
+BIN_TARGETS="windows/386 windows/amd64 darwin/386 darwin/amd64 linux/386 linux/amd64 linux/arm linux/arm64 freebsd/386 freebsd/amd64 freebsd/arm openbsd/386 openbsd/amd64 openbsd/arm netbsd/386 netbsd/amd64 netbsd/arm"
+
 
 # Used for help output
 HELP_SPACING=15
@@ -14,28 +17,20 @@ GO_FILES?=$$(find . -name '*.go' | grep -v vendor)
 EXTERNAL_TOOLS=\
 	golang.org/x/tools/cmd/goimports \
 	github.com/golang/dep/cmd/dep \
-	github.com/client9/misspell/cmd/misspell
+	github.com/client9/misspell/cmd/misspell \
+	github.com/mitchellh/gox
 
-all: build
+.PHONY: build local clean fmt check_spelling fix_spelling vet dep bootstrap help
 
-build: $(BINARY_NAME)_linux_amd64 \
-	$(BINARY_NAME)_darwin_amd64 \
-	$(BINARY_NAME)_windows_amd64 \
-	$(BINARY_NAME)_freebsd_amd64 \
-	$(BINARY_NAME)_openbsd_amd64 \
-	$(BINARY_NAME)_netbsd_amd64 \
-	$(BINARY_NAME)_linux_386 \
-	$(BINARY_NAME)_darwin_386 \
-	$(BINARY_NAME)_windows_386 \
-	$(BINARY_NAME)_freebsd_386 \
-	$(BINARY_NAME)_openbsd_386 \
-	$(BINARY_NAME)_netbsd_386 \
-	$(BINARY_NAME)_linux_arm \
-	$(BINARY_NAME)_linux_arm64 \
-	$(BINARY_NAME)_freebsd_arm \
-	$(BINARY_NAME)_openbsd_arm \
-	$(BINARY_NAME)_netbsd_arm \
-
+build:
+	@echo "*** Building binaries for supported architectures... ***"
+	$(GOX) -osarch=$(BIN_TARGETS) -ldflags=$(LD_FLAGS) -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}"
+	@echo "*** Done ***"
+    
+local:
+	@echo "*** Building local binary... ***"
+	$(GOBUILD) -o $(BINARY_NAME) ./
+	@echo "*** Done ***"
 
 clean:
 	@echo "*** Cleaning up object files... ***"
@@ -70,11 +65,6 @@ dep:
 	@dep ensure
 	@echo "*** Done ***"
 
-local:
-	@echo "*** Building local binary... ***"
-	$(GOBUILD) -o $(BINARY_NAME) ./
-	@echo "*** Done ***"
-
 bootstrap:
 	@echo "*** Installing required tools for building... ***"
 	@for tool in  $(EXTERNAL_TOOLS) ; do \
@@ -96,58 +86,3 @@ help:
 	@printf $(HELP_FORMATSTRING) "local" "Build executable for your OS, for testing purposes"
 	@printf $(HELP_FORMATSTRING) "clean" "Clean your working directory"
 	@printf "\n*** End ***\n\n"
-
-# Compile common amd64 platforms.
-$(BINARY_NAME)_darwin_amd64:
-	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(GOBUILD) -o bin/$@ -v -ldflags=$(LD_FLAGS)
-
-$(BINARY_NAME)_windows_amd64:
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOBUILD) -o bin/$@.exe -v -ldflags=$(LD_FLAGS)
-
-$(BINARY_NAME)_linux_amd64:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o bin/$@ -v -ldflags=$(LD_FLAGS)
-
-$(BINARY_NAME)_freebsd_amd64:
-	CGO_ENABLED=0 GOOS=freebsd GOARCH=amd64 $(GOBUILD) -o bin/$@ -v -ldflags=$(LD_FLAGS)
-
-$(BINARY_NAME)_netbsd_amd64:
-	CGO_ENABLED=0 GOOS=netbsd GOARCH=amd64 $(GOBUILD) -o bin/$@ -v -ldflags=$(LD_FLAGS)
-
-$(BINARY_NAME)_openbsd_amd64:
-	CGO_ENABLED=0 GOOS=openbsd GOARCH=amd64 $(GOBUILD) -o bin/$@ -v -ldflags=$(LD_FLAGS)
-
-# Compile common 386 platforms.
-$(BINARY_NAME)_darwin_386:
-	CGO_ENABLED=0 GOOS=darwin GOARCH=386 $(GOBUILD) -o bin/$@ -v -ldflags=$(LD_FLAGS)
-
-$(BINARY_NAME)_windows_386:
-	CGO_ENABLED=0 GOOS=windows GOARCH=386 $(GOBUILD) -o bin/$@.exe -v -ldflags=$(LD_FLAGS)
-
-$(BINARY_NAME)_linux_386:
-	CGO_ENABLED=0 GOOS=linux GOARCH=386 $(GOBUILD) -o bin/$@ -v -ldflags=$(LD_FLAGS)
-
-$(BINARY_NAME)_freebsd_386:
-	CGO_ENABLED=0 GOOS=freebsd GOARCH=386 $(GOBUILD) -o bin/$@ -v -ldflags=$(LD_FLAGS)
-
-$(BINARY_NAME)_netbsd_386:
-	CGO_ENABLED=0 GOOS=netbsd GOARCH=386 $(GOBUILD) -o bin/$@ -v -ldflags=$(LD_FLAGS)
-
-$(BINARY_NAME)_openbsd_386:
-	CGO_ENABLED=0 GOOS=openbsd GOARCH=386 $(GOBUILD) -o bin/$@ -v -ldflags=$(LD_FLAGS)
-
-# For ARM targets, only Linux and *BSD support for now.
-$(BINARY_NAME)_linux_arm:
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm $(GOBUILD) -o bin/$@ -v -ldflags=$(LD_FLAGS)
-
-$(BINARY_NAME)_linux_arm64:
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 $(GOBUILD) -o bin/$@ -v -ldflags=$(LD_FLAGS)
-
-$(BINARY_NAME)_freebsd_arm:
-	CGO_ENABLED=0 GOOS=freebsd GOARCH=arm $(GOBUILD) -o bin/$@ -v -ldflags=$(LD_FLAGS)
-
-$(BINARY_NAME)_openbsd_arm:
-	CGO_ENABLED=0 GOOS=openbsd GOARCH=arm $(GOBUILD) -o bin/$@ -v -ldflags=$(LD_FLAGS)
-
-$(BINARY_NAME)_netbsd_arm:
-	CGO_ENABLED=0 GOOS=netbsd GOARCH=arm $(GOBUILD) -o bin/$@ -v -ldflags=$(LD_FLAGS)
-
