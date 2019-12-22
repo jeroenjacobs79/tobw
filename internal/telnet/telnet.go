@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Head In Cloud BVBA.
+ * Copyright (c) 2019 Jeroen Jacobs.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as published by
@@ -12,8 +12,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
  */
 
 package telnet
