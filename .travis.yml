@@ -1,11 +1,18 @@
 dist: bionic
-
 language: go
+sudo: false
 
-go:
-  - 1.12.x
-  - 1.13.x
-  - master
+matrix:
+  include:
+    # "1.x" always refers to the latest Go version, inc. the patch release.
+    # e.g. "1.x" is 1.11 until 1.11.1 is available.
+    - go: 1.x
+      env: LATEST=true
+    - go: 1.12.x
+    - go: 1.13.x
+    - go: master
+  allow_failures:
+    - go: master
 
 before_install:
   - make bootstrap
@@ -18,7 +25,7 @@ before_script:
   - make check_spelling
 
 script:
-  - make
+  -  if [ "${LATEST}" = "true" ]; then make; else make local; fi
 
 
 
