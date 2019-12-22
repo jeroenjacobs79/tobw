@@ -27,7 +27,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:c9e0b137902d857921fb87c28039a4af7e587970bd10c4fcec818d1559347d43"
+  digest = "1:1055f180c19b95e216950a40b6d123d1448e7e63df85a29502192fb028f4f057"
   name = "golang.org/x/crypto"
   packages = [
     "chacha20",
@@ -39,18 +39,18 @@
     "ssh",
   ]
   pruneopts = "UT"
-  revision = "b544559bb6d1b5c62fba4af5e843ff542174f079"
+  revision = "becbf705a91575484002d598f87d74f0002801e7"
 
 [[projects]]
   branch = "master"
-  digest = "1:607da0d7cf677985496d5911647383193cce4c67ba4554c4a54607a6a6062c79"
+  digest = "1:564afacb080ec937cc8e63170cbd81155067a2edcfb8ce887affb60f5702687d"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
     "unix",
   ]
   pruneopts = "UT"
-  revision = "6d18c012aee9febd81bbf9806760c8c4480e870d"
+  revision = "0732a990476f7f2f5f7200b39ba4ab730c0f09f8"
 
 [[projects]]
   digest = "1:7093ab359f15c3663a7cfdc539e9eaf44635bc46376d8b888fe480b3ccfbad4d"
