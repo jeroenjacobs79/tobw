@@ -5,7 +5,7 @@ BINARY_NAME=tobw
 VERSION=$(shell git describe --tags --always --dirty)
 # linker flags for stripping debug info and injecting version info
 LD_FLAGS="-s -w -X main.Version=$(VERSION)"
-BIN_TARGETS="windows/386 windows/amd64 darwin/386 darwin/amd64 linux/386 linux/amd64 linux/arm linux/arm64 freebsd/386 freebsd/amd64 freebsd/arm openbsd/386 openbsd/amd64 openbsd/arm netbsd/386 netbsd/amd64 netbsd/arm"
+BIN_TARGETS="windows/386 windows/amd64 darwin/386 darwin/amd64 linux/386 linux/amd64 linux/arm linux/arm64 freebsd/386 freebsd/amd64 freebsd/arm openbsd/386 openbsd/amd64 netbsd/386 netbsd/amd64 netbsd/arm"
 
 
 # Used for help output
