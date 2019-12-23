@@ -25,7 +25,7 @@ before_script:
   - make check_spelling
 
 script:
-  - go test -race -coverprofile=coverage.txt -covermode=atomic ./...
+  - make tests
   - if [ "${LATEST}" = "true" ]; then make; else make local; fi
 
 after_success:

@@ -1,6 +1,7 @@
 GOBUILD=go build
 GOX=gox
 BINARY_NAME=tobw
+COV_REPORT=coverage.txt
 
 VERSION=$(shell git describe --tags --always --dirty)
 # linker flags for stripping debug info and injecting version info
@@ -20,7 +21,7 @@ EXTERNAL_TOOLS=\
 	github.com/client9/misspell/cmd/misspell \
 	github.com/mitchellh/gox
 
-.PHONY: build local clean fmt check_spelling fix_spelling vet dep bootstrap help
+.PHONY: build local clean fmt check_spelling fix_spelling vet dep bootstrap help tests
 
 build:
 	@echo "*** Building binaries for supported architectures... ***"
@@ -72,6 +73,9 @@ bootstrap:
 		GO111MODULE=off go get -u $$tool; \
 	done
 	@echo "*** Done ***"
+
+tests:
+	go test -race -coverprofile=$(COV_REPORT) -covermode=atomic ./...
 
 help:
 	@printf "\n*** Available make targets ***\n\n"
