@@ -19,9 +19,10 @@ EXTERNAL_TOOLS=\
 	golang.org/x/tools/cmd/goimports \
 	github.com/golang/dep/cmd/dep \
 	github.com/client9/misspell/cmd/misspell \
-	github.com/mitchellh/gox
+	github.com/mitchellh/gox \
+	github.com/mgechev/revive
 
-.PHONY: build local clean fmt check_spelling fix_spelling vet dep bootstrap help tests
+.PHONY: build local clean fmt check_spelling fix_spelling vet dep bootstrap help tests lint
 
 build:
 	@echo "*** Building binaries for supported architectures... ***"
@@ -45,6 +46,9 @@ fmt:
 	@echo "*** Applying gofmt on all .go files (excluding vendor)... ***"
 	@goimports -w $(GO_FILES)
 	@echo "*** Done ***"
+
+lint:
+	revive $(GO_FILES)
 
 check_spelling:
 	@echo "*** Check for common spelling mistakes in .go files... ***"

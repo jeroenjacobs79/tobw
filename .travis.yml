@@ -21,6 +21,7 @@ install:
   - make dep
 
 before_script:
+  - make lint
   - make vet
   - make check_spelling
 
