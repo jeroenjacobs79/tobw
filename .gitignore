@@ -27,3 +27,5 @@ tobw.exe
 # ssh key folder
 security/
 
+# coverage file
+coverage.txt

@@ -25,7 +25,10 @@ before_script:
   - make check_spelling
 
 script:
-  -  if [ "${LATEST}" = "true" ]; then make; else make local; fi
+  - go test -race -coverprofile=coverage.txt -covermode=atomic ./...
+  - if [ "${LATEST}" = "true" ]; then make; else make local; fi
 
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
 
 
