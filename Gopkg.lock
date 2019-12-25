@@ -27,9 +27,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:1055f180c19b95e216950a40b6d123d1448e7e63df85a29502192fb028f4f057"
+  digest = "1:3a0bdb0c35d7b834ab54ce68f66b3ca5c120c66db18f5a2cd952314c18f29854"
   name = "golang.org/x/crypto"
   packages = [
+    "bcrypt",
+    "blowfish",
     "chacha20",
     "curve25519",
     "ed25519",
@@ -94,6 +96,7 @@
   input-imports = [
     "github.com/mdp/qrterminal",
     "github.com/sirupsen/logrus",
+    "golang.org/x/crypto/bcrypt",
     "golang.org/x/crypto/ssh",
     "golang.org/x/text/encoding/charmap",
     "gopkg.in/yaml.v2",

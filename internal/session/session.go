@@ -20,6 +20,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jeroenjacobs79/tobw/internal/user"
+
 	"github.com/jeroenjacobs79/tobw/internal/ansiterm"
 	"github.com/mdp/qrterminal"
 )
@@ -87,7 +89,6 @@ func Start(term *ansiterm.AnsiTerminal) {
 		term.DisplayMenuItem('C', "City Hall")
 		term.Println()
 	*/
-	term.SendTextFile("ansi/citysquare.ans")
 	// qr test
 	var qrBuffer strings.Builder
 	qrConfig := qrterminal.Config{
@@ -102,13 +103,29 @@ func Start(term *ansiterm.AnsiTerminal) {
 	qrterminal.GenerateWithConfig("otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example", qrConfig)
 	// term.Print(qrBuffer.String())
 
+	adminUser := user.User{}
+	adminUser.Username = "test user"
+	adminUser.SetPassword("mytestpw")
+
 	term.SetColor(ansiterm.White, false)
-	term.Print("\nPlease enter your real name: ")
+	term.Print("\nPlease enter your username: ")
 	result, err := term.Input(25, ansiterm.InputUpfirst)
 	if err != nil {
 		return
 	}
 
-	term.Println(result)
+	term.Print("\nPlease enter your password: ")
+	pwResult, err := term.Input(32, ansiterm.InputPassword)
+	if err != nil {
+		return
+	}
+
+	if adminUser.ValidatePassword(pwResult) {
+		term.SendTextFile("ansi/citysquare.ans")
+		term.Printf("Welcome %s", result)
+
+	} else {
+		term.Println("Password incorrect. Disconnecting...")
+	}
 	return
 }
