@@ -208,7 +208,7 @@ func handleTelnetRequest(conn net.Conn, cp437ToUtf8 bool) {
 	}()
 
 	// Read a bit of data to let the telnet negotiation finish. Ignore any actual data for now.
-	telnetConn.Read(buf)
+	_, _ = telnetConn.Read(buf)
 
 	session.Start(term)
 }
