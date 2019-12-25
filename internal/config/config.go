@@ -17,7 +17,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"strings"
@@ -29,20 +28,20 @@ import (
 type ConnectionType int
 
 const (
-	TCP_TELNET ConnectionType = iota
-	TCP_RAW
-	TCP_SSH
+	TCPTelnet ConnectionType = iota
+	TCPRaw
+	TCPSSH
 )
 
 func (t ConnectionType) String() (result string) {
 	switch t {
-	case TCP_TELNET:
+	case TCPTelnet:
 		result = "telnet"
 
-	case TCP_RAW:
+	case TCPRaw:
 		result = "raw"
 
-	case TCP_SSH:
+	case TCPSSH:
 		result = "ssh"
 	default:
 		result = "unknown"
@@ -126,13 +125,13 @@ func ParseConfig(configFile string) ([]Listener, error) {
 		AppOptions.LogLevel = log.ErrorLevel
 	default:
 		// Unknown level, generate error
-		return nil, errors.New(fmt.Sprintf("Invalid value for log-level. Valid values are: info, error, debug, trace. Received value: %s", config.Options.LogLevel))
+		return nil, fmt.Errorf("Invalid value for log-level. Valid values are: info, error, debug, trace. Received value: %s", config.Options.LogLevel)
 	}
 	// set private key for ssh listeners
 	AppOptions.SSHPrivateKey = config.Options.SSHPrivateKey
 	// validate listener configuration
 	if len(config.Listeners) == 0 {
-		return nil, errors.New("No listeners are defined in the configuration file.")
+		return nil, fmt.Errorf("No listeners are defined in the configuration file")
 	}
 	listeners := []Listener{}
 	for _, cfgListener := range config.Listeners {
@@ -141,7 +140,7 @@ func ParseConfig(configFile string) ([]Listener, error) {
 			l := Listener{
 				Address:     cfgListener.Address,
 				Port:        cfgListener.Port,
-				ListenType:  TCP_TELNET,
+				ListenType:  TCPTelnet,
 				ConvertUTF8: cfgListener.ConvertUTF8,
 			}
 			listeners = append(listeners, l)
@@ -149,7 +148,7 @@ func ParseConfig(configFile string) ([]Listener, error) {
 			l := Listener{
 				Address:     cfgListener.Address,
 				Port:        cfgListener.Port,
-				ListenType:  TCP_SSH,
+				ListenType:  TCPSSH,
 				ConvertUTF8: cfgListener.ConvertUTF8,
 			}
 			listeners = append(listeners, l)
@@ -158,13 +157,13 @@ func ParseConfig(configFile string) ([]Listener, error) {
 			l := Listener{
 				Address:     cfgListener.Address,
 				Port:        cfgListener.Port,
-				ListenType:  TCP_RAW,
+				ListenType:  TCPRaw,
 				ConvertUTF8: cfgListener.ConvertUTF8,
 			}
 			listeners = append(listeners, l)
 
 		default:
-			return nil, errors.New(fmt.Sprintf("Invalid value for protocol. Valid values are: ssh, telnet, raw. Received value: %s", cfgListener.Protocol))
+			return nil, fmt.Errorf("Invalid value for protocol. Valid values are: ssh, telnet, raw. Received value: %s", cfgListener.Protocol)
 		}
 	}
 	return listeners, nil

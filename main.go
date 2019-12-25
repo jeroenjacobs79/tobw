@@ -30,13 +30,13 @@ import (
 var Version = "local"
 
 const (
-	APP_NAME = "Tale of the Black Wyvern"
+	AppName = "Tale of the Black Wyvern"
 )
 
 func main() {
 	// parse commandline for config file. Error if not specified.
 	if len(os.Args) != 2 {
-		fmt.Printf("%s (version %s)\n", APP_NAME, Version)
+		fmt.Printf("%s (version %s)\n", AppName, Version)
 		fmt.Println("Error: No config file specified.")
 		fmt.Println()
 		fmt.Println("Usage:", os.Args[0], "/path/to/config.yaml")
@@ -58,7 +58,7 @@ func main() {
 	log.SetLevel(config.AppOptions.LogLevel)
 
 	// startup message
-	log.Infof("%s (version %s) is starting up...", APP_NAME, Version)
+	log.Infof("%s (version %s) is starting up...", AppName, Version)
 	// start our listeners
 	var wg sync.WaitGroup
 	for _, listener := range listeners {

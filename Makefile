@@ -31,7 +31,7 @@ build:
     
 local:
 	@echo "*** Building local binary... ***"
-	$(GOBUILD) -o $(BINARY_NAME) ./
+	$(GOBUILD) -o $(BINARY_NAME) -v -ldflags=$(LD_FLAGS) ./
 	@echo "*** Done ***"
 
 clean:
@@ -39,6 +39,7 @@ clean:
 	rm -r -f bin/*
 	rm -f tobw
 	rm -f tobw.exe
+	rm -f coverage.txt
 	go clean
 	@echo "*** Done ***"
 
@@ -48,7 +49,7 @@ fmt:
 	@echo "*** Done ***"
 
 lint:
-	revive $(GO_FILES)
+	@revive $(GO_FILES)
 
 check_spelling:
 	@echo "*** Check for common spelling mistakes in .go files... ***"
@@ -78,8 +79,8 @@ bootstrap:
 	done
 	@echo "*** Done ***"
 
-tests:
-	go test -race -coverprofile=$(COV_REPORT) -covermode=atomic ./...
+test:
+	@go test -race -coverprofile=$(COV_REPORT) -covermode=atomic ./...
 
 help:
 	@printf "\n*** Available make targets ***\n\n"
@@ -88,6 +89,8 @@ help:
 	@printf $(HELP_FORMATSTRING) "dep" "Install libraries needed for compilation"
 	@printf $(HELP_FORMATSTRING) "build" "Compile for all targets"
 	@printf $(HELP_FORMATSTRING) "vet" "Checks code for common mistakes"
+	@printf $(HELP_FORMATSTRING) "lint" "Perform lint/revive check"
+	@printf $(HELP_FORMATSTRING) "test" "Run tests"
 	@printf $(HELP_FORMATSTRING) "fmt" "Fix formatting on .go files"
 	@printf $(HELP_FORMATSTRING) "check_spelling" "Show potential spelling mistakes"
 	@printf $(HELP_FORMATSTRING) "fix_spelling" "Correct detected spelling mistakes"

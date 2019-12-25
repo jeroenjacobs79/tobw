@@ -29,51 +29,51 @@ type ConnectionState int
 const (
 	// connection state, used during read operations to process incoming telnet commands
 
-	STATE_DATA ConnectionState = iota
-	STATE_CR
-	STATE_COMMAND
-	STATE_WILL
-	STATE_WONT
-	STATE_DO
-	STATE_DONT
-	STATE_SUBNEG
-	STATE_SUBNEG_IAC
+	stateData ConnectionState = iota
+	stateCR
+	stateCommand
+	stateWill
+	stateWont
+	stateDo
+	stateDont
+	stateSubNeg
+	stateSubnegIAC
 )
 
 const (
-	CH_CR  byte = 13
-	CH_LF  byte = 10
-	CH_NUL byte = 0
+	chCR  byte = 13
+	chLF  byte = 10
+	chNUL byte = 0
 
 	IAC byte = 255 // Interpret As Command
 
 	// telnet commands
 
-	CMD_SE         byte = 240 // End sub negotiation (240)
-	CMD_NOP        byte = 241 // No operation (241)
-	CMD_DATA       byte = 242 // Data mark (242)
-	CMD_BREAK      byte = 243 // Break (243)
-	CMD_IP         byte = 244 // Interrupt process (244)
-	CMD_ABORT      byte = 245 // Abort output (245)
-	CMD_AYT        byte = 246 // Are you there (246)
-	CMD_ERASE_CHAR byte = 247 // Erase character (247)
-	CMD_ERASE_LINE byte = 248 // Erase line (248)
-	CMD_GA         byte = 249 // Go ahead (249)
-	CMD_SB         byte = 250 // Start sub negotiation (250)
-	CMD_WILL       byte = 251
-	CMD_WONT       byte = 252
-	CMD_DO         byte = 253
-	CMD_DONT       byte = 254
+	cmdSE        byte = 240 // End sub negotiation (240)
+	cmdNop       byte = 241 // No operation (241)
+	cmdData      byte = 242 // Data mark (242)
+	cmdBreak     byte = 243 // Break (243)
+	cmdIP        byte = 244 // Interrupt process (244)
+	cmdAbort     byte = 245 // Abort output (245)
+	cmdAYT       byte = 246 // Are you there (246)
+	cmdEraseChar byte = 247 // Erase character (247)
+	cmdEraseLine byte = 248 // Erase line (248)
+	cmdGA        byte = 249 // Go ahead (249)
+	cmdSB        byte = 250 // Start sub negotiation (250)
+	cmdWill      byte = 251
+	cmdWont      byte = 252
+	cmdDo        byte = 253
+	cmdDont      byte = 254
 
 	// telnet options
 
-	OPT_BINARY       byte = 0
-	OPT_ECHO         byte = 1
-	OPT_SUPPRESS_GA  byte = 3
-	OPT_MSG_SIZE_NEG byte = 4
-	OPT_STATUS       byte = 5
-	OPT_TIMING_MARK  byte = 6
-	OPT_NAWS         byte = 31
+	optBinary     byte = 0
+	optEcho       byte = 1
+	optSupressGA  byte = 3
+	optMsgSizeNeg byte = 4
+	optStatus     byte = 5
+	optTimingMark byte = 6
+	optNAWS       byte = 31
 )
 
 // Telnet specific connection stuff
@@ -199,27 +199,27 @@ func (c *Conn) Read(data []byte) (int, error) {
 	if tempRead > 0 {
 		for _, element := range buffer[:tempRead] {
 			switch c.readState {
-			case STATE_DATA:
+			case stateData:
 				switch element {
 				case IAC:
-					log.Tracef("%s - State changed to STATE_COMMAND", c.RemoteAddr())
-					c.readState = STATE_COMMAND
-				case CH_CR:
+					log.Tracef("%s - State changed to stateCommand", c.RemoteAddr())
+					c.readState = stateCommand
+				case chCR:
 					data[destIndex] = element
 					destIndex++
-					log.Tracef("%s - State changed to STATE_CR", c.RemoteAddr())
-					c.readState = STATE_CR
+					log.Tracef("%s - State changed to stateCR", c.RemoteAddr())
+					c.readState = stateCR
 				default:
 					// not IAC or CR, so it's data
 					data[destIndex] = element
 					destIndex++
 				}
 
-			case STATE_CR:
+			case stateCR:
 				// only for conversion from CR/LF or CR/NUL to CR. We probably shouldn't do this if telnet is in binary mode.
 				// TO-DO implement binary mode support :-D
 				switch element {
-				case CH_LF, CH_NUL:
+				case chLF, chNUL:
 					// Do nothing. just ignore this byte.
 				default:
 					// Add to buffer, as it's just normal data
@@ -228,74 +228,74 @@ func (c *Conn) Read(data []byte) (int, error) {
 
 				}
 				// switch back to normal data state
-				log.Tracef("%s - State changed to STATE_DATA", c.RemoteAddr())
-				c.readState = STATE_DATA
+				log.Tracef("%s - State changed to stateData", c.RemoteAddr())
+				c.readState = stateData
 
-			case STATE_COMMAND:
+			case stateCommand:
 				if element == IAC {
 					// this is en escaped byte 255, so just consider it as data
 					data[destIndex] = element
 					destIndex++
-					log.Tracef("%s - State changed to STATE_DATA", c.RemoteAddr())
-					c.readState = STATE_DATA
+					log.Tracef("%s - State changed to stateData", c.RemoteAddr())
+					c.readState = stateData
 				} else {
 					// it's a telnet command. Set our processor to the correct state before processing the next byte
 					switch element {
-					case CMD_WILL:
-						log.Tracef("%s - State changed to STATE_WILL", c.RemoteAddr())
-						c.readState = STATE_WILL
-					case CMD_DO:
-						log.Tracef("%s - State changed to STATE_DO", c.RemoteAddr())
-						c.readState = STATE_DO
-					case CMD_WONT:
-						log.Tracef("%s - State changed to STATE_WONT", c.RemoteAddr())
-						c.readState = STATE_WONT
-					case CMD_DONT:
-						log.Tracef("%s - State changed to STATE_DONT", c.RemoteAddr())
-						c.readState = STATE_DONT
-					case CMD_SB:
-						log.Tracef("%s - State changed to STATE_SUBNEG", c.RemoteAddr())
-						c.readState = STATE_SUBNEG
+					case cmdWill:
+						log.Tracef("%s - State changed to stateWill", c.RemoteAddr())
+						c.readState = stateWill
+					case cmdDo:
+						log.Tracef("%s - State changed to stateDo", c.RemoteAddr())
+						c.readState = stateDo
+					case cmdWont:
+						log.Tracef("%s - State changed to stateWont", c.RemoteAddr())
+						c.readState = stateWont
+					case cmdDont:
+						log.Tracef("%s - State changed to stateDont", c.RemoteAddr())
+						c.readState = stateDont
+					case cmdSB:
+						log.Tracef("%s - State changed to stateSubNeg", c.RemoteAddr())
+						c.readState = stateSubNeg
 						// start of a new subnegotation, so let's reset the buffer
 						c.subNegBuffer.Reset()
 					default:
 						log.Debugf("%s - Received telnet command: %d", c.RemoteAddr(), element)
 						c.commandHandler(element)
-						log.Tracef("%s - State changed to STATE_DATA", c.RemoteAddr())
-						c.readState = STATE_DATA
+						log.Tracef("%s - State changed to stateData", c.RemoteAddr())
+						c.readState = stateData
 					}
 				}
-			case STATE_WILL:
+			case stateWill:
 				log.Debugf("%s - Received WILL: %d", c.RemoteAddr(), element)
-				log.Tracef("%s - State changed to STATE_DATA", c.RemoteAddr())
-				c.optionHandler(CMD_WILL, element)
-				c.readState = STATE_DATA
+				log.Tracef("%s - State changed to stateData", c.RemoteAddr())
+				c.optionHandler(cmdWill, element)
+				c.readState = stateData
 
-			case STATE_WONT:
+			case stateWont:
 				log.Debugf("%s - Received WONT: %d", c.RemoteAddr(), element)
-				log.Tracef("%s - State changed to STATE_DATA", c.RemoteAddr())
-				c.optionHandler(CMD_WONT, element)
-				c.readState = STATE_DATA
+				log.Tracef("%s - State changed to stateData", c.RemoteAddr())
+				c.optionHandler(cmdWont, element)
+				c.readState = stateData
 
-			case STATE_DO:
+			case stateDo:
 				log.Debugf("%s - Received DO: %d", c.RemoteAddr(), element)
-				log.Tracef("%s - State changed to STATE_DATA", c.RemoteAddr())
-				c.optionHandler(CMD_DO, element)
-				c.readState = STATE_DATA
+				log.Tracef("%s - State changed to stateData", c.RemoteAddr())
+				c.optionHandler(cmdDo, element)
+				c.readState = stateData
 
-			case STATE_DONT:
+			case stateDont:
 				log.Debugf("%s - Received DONT: %d", c.RemoteAddr(), element)
-				log.Tracef("%s - State changed to STATE_DATA", c.RemoteAddr())
-				c.optionHandler(CMD_DONT, element)
-				c.readState = STATE_DATA
+				log.Tracef("%s - State changed to stateData", c.RemoteAddr())
+				c.optionHandler(cmdDont, element)
+				c.readState = stateData
 
 			// here we do all the subnegotation handling. This is a bit messy...
 
-			case STATE_SUBNEG:
+			case stateSubNeg:
 				switch element {
 				case IAC:
-					log.Tracef("%s - State changed to STATE_SUBNEG_IAC", c.RemoteAddr())
-					c.readState = STATE_SUBNEG_IAC
+					log.Tracef("%s - State changed to stateSubnegIAC", c.RemoteAddr())
+					c.readState = stateSubnegIAC
 				default:
 					// default action is to add data to the buffer
 					c.subNegBuffer.Grow(1)
@@ -305,7 +305,7 @@ func (c *Conn) Read(data []byte) (int, error) {
 					}
 
 				}
-			case STATE_SUBNEG_IAC:
+			case stateSubnegIAC:
 				switch element {
 				case IAC:
 					// it was an escaped IAC, so add it to the subneg buffer
@@ -314,14 +314,14 @@ func (c *Conn) Read(data []byte) (int, error) {
 					if err != nil {
 						log.Errorln(err.Error())
 					}
-					log.Tracef("%s - State changed to STATE_SUBNEG", c.RemoteAddr())
-					c.readState = STATE_SUBNEG
+					log.Tracef("%s - State changed to stateSubNeg", c.RemoteAddr())
+					c.readState = stateSubNeg
 
-				case CMD_SE:
+				case cmdSE:
 					// received end of subnegotation. Call handler and move back to data mode
 					c.subNegHandler()
-					log.Tracef("%s - State changed to STATE_DATA", c.RemoteAddr())
-					c.readState = STATE_DATA
+					log.Tracef("%s - State changed to stateData", c.RemoteAddr())
+					c.readState = stateData
 				}
 
 			}
@@ -332,7 +332,7 @@ func (c *Conn) Read(data []byte) (int, error) {
 }
 
 func (c *Conn) RequestTermSize() {
-	err := c.SendDo(OPT_NAWS)
+	err := c.SendDo(optNAWS)
 	if err != nil {
 		log.Errorln(err.Error())
 	}
@@ -345,11 +345,11 @@ func NewConnection(c net.Conn) *Conn {
 	}
 	// set telnet parameters, this should ensure the connection is in character-mode, and echo'ing is done by the server.
 	// We want to be in control of all echo-ing.
-	err := conn.SendWill(OPT_SUPPRESS_GA)
+	err := conn.SendWill(optSupressGA)
 	if err != nil {
 		log.Errorln(err.Error())
 	}
-	err = conn.SendWill(OPT_ECHO)
+	err = conn.SendWill(optEcho)
 	if err != nil {
 		log.Errorln(err.Error())
 	}
@@ -366,7 +366,7 @@ func (c *Conn) subNegHandler() {
 	if len(data) > 0 {
 		option := data[0]
 		switch option {
-		case OPT_NAWS:
+		case optNAWS:
 			if len(data) != 5 {
 				log.Errorf("%s - Incorrect amount of parameters for NAWS subnegotiation.", c.RemoteAddr())
 				break
@@ -401,27 +401,27 @@ func (c *Conn) commandHandler(command byte) {
 func (c *Conn) optionHandler(command byte, option byte) {
 	var err error
 	switch command {
-	case CMD_WILL:
+	case cmdWill:
 		switch option {
 		// only send DO for options we actually support
-		case OPT_NAWS, OPT_SUPPRESS_GA:
+		case optNAWS, optSupressGA:
 			err = c.SendDo(option)
-		case OPT_ECHO:
+		case optEcho:
 			// explicitly disable local echo on client for now? Should this be allowed if client requests it?
 			err = c.SendDont(option)
 		default:
 			err = c.SendDont(option)
 		}
-	case CMD_WONT:
-	case CMD_DO:
+	case cmdWont:
+	case cmdDo:
 		switch option {
-		case OPT_SUPPRESS_GA, OPT_ECHO:
+		case optSupressGA, optEcho:
 			err = c.SendWill(option)
 		default:
 			err = c.SendWont(option)
 
 		}
-	case CMD_DONT:
+	case cmdDont:
 	}
 	if err != nil {
 		log.Errorln(err.Error())

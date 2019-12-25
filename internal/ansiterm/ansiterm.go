@@ -35,36 +35,25 @@ type AnsiTerminal struct {
 	Cp437toUtf8 bool
 }
 
-type FGColor byte
-type BGColor byte
+type AnsiColor int
 type InputMode int
 
 const (
-	FG_RESET   FGColor = 0
-	FG_BLACK   FGColor = 30
-	FG_RED     FGColor = 31
-	FG_GREEN   FGColor = 32
-	FG_YELLOW  FGColor = 33
-	FG_BLUE    FGColor = 34
-	FG_MAGENTA FGColor = 35
-	FG_CYAN    FGColor = 36
-	FG_WHITE   FGColor = 37
+	Reset   AnsiColor = -1
+	Black   AnsiColor = 0
+	Red     AnsiColor = 1
+	Green   AnsiColor = 2
+	Yellow  AnsiColor = 3
+	Blue    AnsiColor = 4
+	Magenta AnsiColor = 5
+	Cyan    AnsiColor = 6
+	White   AnsiColor = 7
 
-	BG_RESET           = 0
-	BG_BLACK   BGColor = 40
-	BG_RED     BGColor = 41
-	BG_GREEN   BGColor = 42
-	BG_YELLOW  BGColor = 43
-	BG_BLUE    BGColor = 44
-	BG_MAGENTA BGColor = 45
-	BG_CYAN    BGColor = 46
-	BG_WHITE   BGColor = 47
-
-	INPUT_ALL      InputMode = 0
-	INPUT_DIGIT    InputMode = 1
-	INPUT_UPALL    InputMode = 2
-	INPUT_PASSWORD InputMode = 3
-	INPUT_UPFIRST  InputMode = 4
+	InputAll      InputMode = 0
+	InputDigit    InputMode = 1
+	InputUpall    InputMode = 2
+	InputPassword InputMode = 3
+	InputUpfirst  InputMode = 4
 )
 
 func CreateAnsiTerminal(device io.ReadWriteCloser) *AnsiTerminal {
@@ -128,21 +117,42 @@ func (t *AnsiTerminal) Println(a ...interface{}) (n int, err error) {
 
 // color stuff
 
-func (t *AnsiTerminal) SetColor(c FGColor, bright bool) {
+func (t *AnsiTerminal) SetColor(fg AnsiColor, bright bool) {
+	fgColor := convertColorToFGValue(fg)
 	if bright {
-		t.Printf("\x1B[0;1;%dm", c)
+		t.Printf("\x1B[0;1;%dm", fgColor)
 	} else {
-		t.Printf("\x1B[0;22;%dm", c)
+		t.Printf("\x1B[0;22;%dm", fgColor)
 	}
 }
 
-func (t *AnsiTerminal) SetFullColor(c FGColor, b BGColor, bright bool) {
+func (t *AnsiTerminal) SetFullColor(fg AnsiColor, bg AnsiColor, bright bool) {
+	fgColor := convertColorToFGValue(fg)
+	bgColor := convertColorToBGValue(bg)
 	if bright {
-		t.Printf("\x1B[0;1;%d;%dm", c, b)
+		t.Printf("\x1B[0;1;%d;%dm", fgColor, bgColor)
 	} else {
-		t.Printf("\x1B[0;2;%d;%dm", c, b)
+		t.Printf("\x1B[0;2;%d;%dm", fgColor, bgColor)
 
 	}
+}
+
+func convertColorToFGValue(color AnsiColor) (result byte) {
+	if color == Reset {
+		result = 0
+	} else {
+		result = byte(color) + 30
+	}
+	return
+}
+
+func convertColorToBGValue(color AnsiColor) (result byte) {
+	if color == Reset {
+		result = 0
+	} else {
+		result = byte(color) + 40
+	}
+	return
 }
 
 func (t *AnsiTerminal) ClearEOL() {
@@ -168,11 +178,11 @@ func (t *AnsiTerminal) SetBlink(v bool) {
 }
 
 func (t *AnsiTerminal) DisplayMenuItem(id rune, description string) {
-	t.SetColor(FG_GREEN, false)
+	t.SetColor(Green, false)
 	t.Printf("[")
-	t.SetColor(FG_RED, true)
+	t.SetColor(Red, true)
 	t.Printf("%c", id)
-	t.SetColor(FG_GREEN, false)
+	t.SetColor(Green, false)
 	t.Printf("] %s", description)
 
 }
@@ -242,12 +252,12 @@ func (t *AnsiTerminal) Input(size int, mode InputMode) (result string, err error
 	var inputCounter = 0
 	var ch rune
 	var lastChar rune
-	t.SetFullColor(FG_BLUE, BG_BLUE, false)
+	t.SetFullColor(Blue, Blue, false)
 	for i := 0; i < size; i++ {
 		t.Print(" ")
 	}
 	t.Printf("\x1B[%dD", size)
-	t.SetFullColor(FG_WHITE, BG_BLUE, false)
+	t.SetFullColor(White, Blue, false)
 
 	// We have drawn our input box, now let's get input
 	ch, err = t.WaitKey(false)
@@ -274,28 +284,28 @@ func (t *AnsiTerminal) Input(size int, mode InputMode) (result string, err error
 			if inputCounter < size {
 				if unicode.IsPrint(ch) {
 					switch mode {
-					case INPUT_ALL:
+					case InputAll:
 						inputBuffer.WriteRune(ch)
 						inputCounter++
 						t.Printf("%c", ch)
-					case INPUT_PASSWORD:
+					case InputPassword:
 						inputBuffer.WriteRune(ch)
 						inputCounter++
 						t.Print("*")
-					case INPUT_UPALL:
+					case InputUpall:
 						if unicode.IsLower(ch) {
 							ch = unicode.ToUpper(ch)
 						}
 						inputBuffer.WriteRune(ch)
 						inputCounter++
 						t.Printf("%c", ch)
-					case INPUT_DIGIT:
+					case InputDigit:
 						if unicode.IsDigit(ch) {
 							inputBuffer.WriteRune(ch)
 							inputCounter++
 							t.Printf("%c", ch)
 						}
-					case INPUT_UPFIRST:
+					case InputUpfirst:
 						if unicode.IsSpace(lastChar) || inputCounter == 0 {
 							ch = unicode.ToUpper(ch)
 						}

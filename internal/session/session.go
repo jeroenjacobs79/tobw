@@ -31,11 +31,11 @@ func Start(term *ansiterm.AnsiTerminal) {
 	// start here
 	term.ClearScreen()
 	term.GotoXY(1, 1)
-	term.SetColor(ansiterm.FG_WHITE, true)
+	term.SetColor(ansiterm.White, true)
 	term.Printf("\nTale of the Black Wyvern - ")
-	term.SetColor(ansiterm.FG_GREEN, false)
+	term.SetColor(ansiterm.Green, false)
 	term.Printf("City Square\n")
-	term.SetColor(ansiterm.FG_GREEN, true)
+	term.SetColor(ansiterm.Green, true)
 	cols, _ := term.GetTerminalSize()
 	var line string
 	if cols%2 == 0 {
@@ -102,9 +102,9 @@ func Start(term *ansiterm.AnsiTerminal) {
 	qrterminal.GenerateWithConfig("otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example", qrConfig)
 	// term.Print(qrBuffer.String())
 
-	term.SetColor(ansiterm.FG_WHITE, false)
+	term.SetColor(ansiterm.White, false)
 	term.Print("\nPlease enter your real name: ")
-	result, err := term.Input(25, ansiterm.INPUT_UPFIRST)
+	result, err := term.Input(25, ansiterm.InputUpfirst)
 	if err != nil {
 		return
 	}

@@ -35,7 +35,7 @@ func StartListener(wg *sync.WaitGroup, address string, c config.ConnectionType, 
 	log.Infof("Starting %s listener on address %s...", c, address)
 
 	// listeners for telnet and raw tcp
-	if c != config.TCP_SSH {
+	if c != config.TCPSSH {
 		srv, err := net.Listen("tcp", address)
 		if err != nil {
 			log.Fatal(err.Error())
@@ -59,9 +59,9 @@ func StartListener(wg *sync.WaitGroup, address string, c config.ConnectionType, 
 			}
 			// Handle connections in a new goroutine.
 			switch c {
-			case config.TCP_TELNET:
+			case config.TCPTelnet:
 				go handleTelnetRequest(conn, cp437ToUtf8)
-			case config.TCP_RAW:
+			case config.TCPRaw:
 				go handleRawRequest(conn, cp437ToUtf8)
 			}
 
@@ -109,7 +109,7 @@ func StartListener(wg *sync.WaitGroup, address string, c config.ConnectionType, 
 				log.Errorln(err.Error())
 			}
 
-			go handleSshRequest(conn, sshConfig, cp437ToUtf8)
+			go handleSSHRequest(conn, sshConfig, cp437ToUtf8)
 		}
 	}
 }
@@ -120,7 +120,7 @@ func parseSize(data []byte) (w uint32, h uint32) {
 	return
 }
 
-func handleSshRequest(conn net.Conn, conf *ssh.ServerConfig, cp437ToUtf8 bool) {
+func handleSSHRequest(conn net.Conn, conf *ssh.ServerConfig, cp437ToUtf8 bool) {
 	log.Infof("%s - Connected", conn.RemoteAddr())
 	_, chans, reqs, err := ssh.NewServerConn(conn, conf)
 	if err != nil {
