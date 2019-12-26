@@ -18,6 +18,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/jeroenjacobs79/tobw/internal/monitoring"
 	"os"
 	"sync"
 
@@ -56,9 +57,12 @@ func main() {
 	)
 	// set log level
 	log.SetLevel(config.AppOptions.LogLevel)
-
 	// startup message
 	log.Infof("%s (version %s) is starting up...", AppName, Version)
+	// start metrics endpoint, if configured
+	if config.AppOptions.Prometheus.Enabled {
+		go monitoring.StartMetricsEndpoint(config.AppOptions.Prometheus)
+	}
 	// start our listeners
 	var wg sync.WaitGroup
 	for _, listener := range listeners {

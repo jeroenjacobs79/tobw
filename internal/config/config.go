@@ -69,12 +69,20 @@ type Config struct {
 		Protocol    string
 		ConvertUTF8 bool `yaml:"convertUTF8"`
 	}
+	Prometheus struct {
+		Enabled bool
+		Address string
+		Port uint16
+		Path string
+
+	}
 }
 
 // final structure for program options
 type ProgramOptions struct {
 	LogLevel      log.Level
 	SSHPrivateKey string
+	Prometheus PrometheusConfig
 }
 
 // final structure for listener config
@@ -92,6 +100,15 @@ type DatabaseConfig struct {
 	Database string
 	User     string
 	Password string
+}
+
+
+// final structure for prometheus endpoint
+type PrometheusConfig struct {
+	Enabled bool
+	Address string
+	Port uint16
+	Path string
 }
 
 // package variables for config
@@ -112,7 +129,6 @@ func ParseConfig(configFile string) ([]Listener, error) {
 		return nil, err
 	}
 	log.Trace(config)
-
 	// validate program options
 	switch strings.ToLower(config.Options.LogLevel) {
 	case "info":
@@ -127,6 +143,25 @@ func ParseConfig(configFile string) ([]Listener, error) {
 		// Unknown level, generate error
 		return nil, fmt.Errorf("Invalid value for log-level. Valid values are: info, error, debug, trace. Received value: %s", config.Options.LogLevel)
 	}
+
+	// set default Prometheus values
+	AppOptions.Prometheus.Enabled = config.Prometheus.Enabled
+	if config.Prometheus.Address == "" {
+		AppOptions.Prometheus.Address = "127.0.0.1"
+	} else {
+		AppOptions.Prometheus.Address = config.Prometheus.Address
+	}
+	if config.Prometheus.Port == 0 {
+		AppOptions.Prometheus.Port = 9000
+	} else {
+		AppOptions.Prometheus.Port = config.Prometheus.Port
+	}
+	if config.Prometheus.Path == "" {
+		AppOptions.Prometheus.Path = "/metrics"
+	} else {
+		AppOptions.Prometheus.Path = config.Prometheus.Path
+	}
+
 	// set private key for ssh listeners
 	AppOptions.SSHPrivateKey = config.Options.SSHPrivateKey
 	// validate listener configuration

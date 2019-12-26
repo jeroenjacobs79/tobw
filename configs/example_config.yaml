@@ -10,6 +10,9 @@ options:
   #location of ssh host key to use. Either full path, or relative path from current work directory.
   sshPrivateKey: "security/tobw_rsa"
 
+prometheus:
+  enabled: true
+
 listeners:
   - address: "0.0.0.0"
     port: 5000
