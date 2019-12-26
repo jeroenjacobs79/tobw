@@ -17,6 +17,7 @@
 package ansiterm
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -29,7 +30,8 @@ import (
 )
 
 type AnsiTerminal struct {
-	io.ReadWriteCloser
+	ioDevice io.ReadWriteCloser
+	*bufio.ReadWriter
 	columns     int
 	rows        int
 	Cp437toUtf8 bool
@@ -58,22 +60,29 @@ const (
 
 func CreateAnsiTerminal(device io.ReadWriteCloser) *AnsiTerminal {
 	term := AnsiTerminal{
-		ReadWriteCloser: device,
+		ioDevice: device,
+		ReadWriter: bufio.NewReadWriter(bufio.NewReader(device), bufio.NewWriter(device)),
 		// this is pretty standard in case we don't receive any updates on the size
 		columns: 80,
 		rows:    24,
+
 	}
 	return &term
 }
 
-func (t *AnsiTerminal) Write(data []byte) (totalWritten int, err error) {
+func (t *AnsiTerminal) Close() (err error) {
+	t.Flush()
+	return t.ioDevice.Close()
+}
+
+func (t *AnsiTerminal) WriteText(data []byte) (totalWritten int, err error) {
 	if t.Cp437toUtf8 {
 		result, err := charmap.CodePage437.NewDecoder().Bytes(data)
 		if err == nil {
-			totalWritten, err = t.ReadWriteCloser.Write(result)
+			totalWritten, err = t.Write(result)
 		}
 	} else {
-		totalWritten, err = t.ReadWriteCloser.Write(data)
+		totalWritten, err = t.Write(data)
 	}
 	return
 }
@@ -97,21 +106,24 @@ func (t *AnsiTerminal) GetTerminalSize() (columns int, rows int) {
 func (t *AnsiTerminal) Print(a ...interface{}) (n int, err error) {
 	s := fmt.Sprint(a...)
 	final := strings.NewReplacer("\r\n", "\r\n", "\n", "\r\n").Replace(s)
-	n, err = t.Write([]byte(final))
+	n, err = t.WriteText([]byte(final))
+	_ = t.Flush()
 	return
 }
 
 func (t *AnsiTerminal) Printf(format string, a ...interface{}) (n int, err error) {
 	s := fmt.Sprintf(format, a...)
 	final := strings.NewReplacer("\r\n", "\r\n", "\n", "\r\n").Replace(s)
-	n, err = t.Write([]byte(final))
+	n, err = t.WriteText([]byte(final))
+	_ = t.Flush()
 	return
 }
 
 func (t *AnsiTerminal) Println(a ...interface{}) (n int, err error) {
 	s := fmt.Sprintln(a...)
 	final := strings.NewReplacer("\r\n", "\r\n", "\n", "\r\n").Replace(s)
-	n, err = t.Write([]byte(final))
+	n, err = t.WriteText([]byte(final))
+	_ = t.Flush()
 	return
 }
 
@@ -331,6 +343,7 @@ func (t *AnsiTerminal) Input(size int, mode InputMode) (result string, err error
 func (t *AnsiTerminal) SendTextFile(path string) {
 	privateBytes, err := ioutil.ReadFile(path)
 	if err == nil {
-		t.Write(privateBytes)
+		t.WriteText(privateBytes)
+		_ = t.Flush()
 	}
 }
