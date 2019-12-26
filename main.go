@@ -18,9 +18,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/jeroenjacobs79/tobw/internal/monitoring"
 	"os"
 	"sync"
+
+	"github.com/jeroenjacobs79/tobw/internal/monitoring"
 
 	"github.com/jeroenjacobs79/tobw/internal/config"
 	"github.com/jeroenjacobs79/tobw/internal/termserve"

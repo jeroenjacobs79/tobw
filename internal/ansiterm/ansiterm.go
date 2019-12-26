@@ -60,12 +60,11 @@ const (
 
 func CreateAnsiTerminal(device io.ReadWriteCloser) *AnsiTerminal {
 	term := AnsiTerminal{
-		ioDevice: device,
+		ioDevice:   device,
 		ReadWriter: bufio.NewReadWriter(bufio.NewReader(device), bufio.NewWriter(device)),
 		// this is pretty standard in case we don't receive any updates on the size
 		columns: 80,
 		rows:    24,
-
 	}
 	return &term
 }

@@ -72,9 +72,8 @@ type Config struct {
 	Prometheus struct {
 		Enabled bool
 		Address string
-		Port uint16
-		Path string
-
+		Port    uint16
+		Path    string
 	}
 }
 
@@ -82,7 +81,7 @@ type Config struct {
 type ProgramOptions struct {
 	LogLevel      log.Level
 	SSHPrivateKey string
-	Prometheus PrometheusConfig
+	Prometheus    PrometheusConfig
 }
 
 // final structure for listener config
@@ -102,13 +101,12 @@ type DatabaseConfig struct {
 	Password string
 }
 
-
 // final structure for prometheus endpoint
 type PrometheusConfig struct {
 	Enabled bool
 	Address string
-	Port uint16
-	Path string
+	Port    uint16
+	Path    string
 }
 
 // package variables for config

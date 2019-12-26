@@ -19,8 +19,9 @@ package monitoring
 import (
 	"fmt"
 	"net/http"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	"github.com/jeroenjacobs79/tobw/internal/config"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 )
 
