@@ -22,6 +22,8 @@ import (
 	"net"
 	"sync"
 
+	"github.com/jeroenjacobs79/tobw/internal/monitoring"
+
 	"github.com/jeroenjacobs79/tobw/internal/ansiterm"
 	"github.com/jeroenjacobs79/tobw/internal/config"
 	"github.com/jeroenjacobs79/tobw/internal/session"
@@ -177,9 +179,17 @@ func handleSSHRequest(conn net.Conn, conf *ssh.ServerConfig, cp437ToUtf8 bool) {
 			}
 		}(requests)
 
+		// add connection to metrics
+		monitoring.CurrentConnections.Inc()
+		monitoring.CurrentSSHConnections.Inc()
+
+		// start actual session
 		session.Start(term)
 		log.Infof("%s - Disconnected", conn.RemoteAddr())
 		err = term.Close()
+		// remove connection from metrics
+		monitoring.CurrentConnections.Dec()
+		monitoring.CurrentSSHConnections.Dec()
 		if err != nil {
 			log.Error(err.Error())
 		}
@@ -202,6 +212,8 @@ func handleTelnetRequest(conn net.Conn, cp437ToUtf8 bool) {
 	defer func() {
 		log.Infof("%s - Disconnected", telnetConn.RemoteAddr())
 		err := term.Close()
+		monitoring.CurrentConnections.Dec()
+		monitoring.CurrentTelnetConnections.Dec()
 		if err != nil {
 			log.Error(err.Error())
 		}
@@ -209,6 +221,9 @@ func handleTelnetRequest(conn net.Conn, cp437ToUtf8 bool) {
 
 	// Read a bit of data to let the telnet negotiation finish. Ignore any actual data for now.
 	_, _ = telnetConn.Read(buf)
+
+	monitoring.CurrentConnections.Inc()
+	monitoring.CurrentTelnetConnections.Inc()
 
 	session.Start(term)
 }
@@ -222,9 +237,15 @@ func handleRawRequest(conn net.Conn, cp437ToUtf8 bool) {
 	defer func() {
 		log.Infof("%s - Disconnected", conn.RemoteAddr())
 		err := term.Close()
+		monitoring.CurrentConnections.Dec()
+		monitoring.CurrentRawConnections.Dec()
+
 		if err != nil {
 			log.Error(err.Error())
 		}
 	}()
+	monitoring.CurrentConnections.Inc()
+	monitoring.CurrentRawConnections.Inc()
+
 	session.Start(term)
 }
