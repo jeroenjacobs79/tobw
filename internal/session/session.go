@@ -17,11 +17,11 @@
 package session
 
 import (
-	"github.com/sirupsen/logrus"
 	"strings"
 	"time"
 
 	"github.com/jeroenjacobs79/tobw/internal/ansiterm"
+	"github.com/jeroenjacobs79/tobw/internal/user"
 	"github.com/mdp/qrterminal"
 )
 
@@ -73,7 +73,7 @@ func Start(term *ansiterm.AnsiTerminal, hangup chan<- *ansiterm.AnsiTerminal) {
 	qrterminal.GenerateWithConfig("otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example", qrConfig)
 	// term.Print(qrBuffer.String())
 
-	/*
+
 	adminUser := user.User{}
 	adminUser.Username = "test user"
 	adminUser.SetPassword("mytestpw")
@@ -99,11 +99,8 @@ func Start(term *ansiterm.AnsiTerminal, hangup chan<- *ansiterm.AnsiTerminal) {
 		term.Println("Password incorrect. Disconnecting...")
 	}
 
-	*/
-	_, err := term.WaitKeys("ghj", true)
-	if err != nil {
-		logrus.Errorln(err.Error())
-		return
-	}
+
+
+
 	return
 }

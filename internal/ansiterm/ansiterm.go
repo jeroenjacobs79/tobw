@@ -20,7 +20,6 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/jeroenjacobs79/tobw/internal/config"
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/text/encoding/charmap"
 	"io"
 	"io/ioutil"
@@ -205,91 +204,129 @@ func (t *AnsiTerminal) DisplayMenuItem(id rune, description string) {
 
 // Input routines
 
+
+type ReadResponse struct {
+	data []byte
+	err  error
+}
+
 func (t *AnsiTerminal) WaitKey(ignoreCase bool) (r rune, err error) {
-	// wait for key and return. If key is character, it is converted to uppercase.
+	// wait for key that is permitted and return. If key is character, it is converted to uppercase.
+	dataChannel := make(chan *ReadResponse)
+	found := false
+
+	for !found {
+		go func() {
+			buffer := make([]byte, 256)
+			countRead, err := t.Read(buffer)
+			response := &ReadResponse{data: buffer[:countRead], err: err}
+			dataChannel <- response
+		}()
+
+		select {
+		case response := <-dataChannel:
+			err = response.err
+			if len(response.data) > 0 {
+				for _, value := range string(response.data) {
+					if unicode.IsLower(value) && ignoreCase {
+						r = unicode.ToUpper(value)
+					} else {
+						r = value
+					}
+					found = true
+					break
+				}
+			}
+			if response.err != nil {
+				return
+			}
+
+		case <-time.After(30 * time.Second):
+			return 0, fmt.Errorf("Read time-out after 30 seconds")
+		}
+
+	}
+	return
+}
+
+func (t *AnsiTerminal) WaitKeys(allowed string, ignoreCase bool) (r rune, err error) {
+	// wait for key that is permitted and return. If key is character, it is converted to uppercase.
+	dataChannel := make(chan *ReadResponse)
+	found := false
+
+	for !found {
+		go func() {
+			buffer := make([]byte, 256)
+			countRead, err := t.Read(buffer)
+			response := &ReadResponse{data: buffer[:countRead], err: err}
+			dataChannel <- response
+		}()
+
+		select {
+		case response := <-dataChannel:
+			err = response.err
+			if len(response.data) > 0 {
+				for _, value := range string(response.data) {
+					var current rune
+					if unicode.IsLower(value) && ignoreCase {
+						current = unicode.ToUpper(value)
+					} else {
+						current = value
+					}
+					for _, allowedRune := range allowed {
+						if unicode.IsLower(allowedRune) && ignoreCase {
+							allowedRune = unicode.ToUpper(allowedRune)
+						}
+						if current == allowedRune {
+							found = true
+							r = current
+							break
+						}
+					}
+				}
+			}
+			if response.err != nil {
+				return
+			}
+
+		case <-time.After(30 * time.Second):
+			return 0, fmt.Errorf("Read time-out after 30 seconds")
+		}
+
+	}
+	return
+}
+
+func (t *AnsiTerminal) WaitKeys2(allowed string, ignoreCase bool) (r rune, err error) {
+	// wait for key that is permitted and return. If key is character, it is converted to uppercase.
 	found := false
 	countRead := 0
 	for !found {
 		buffer := make([]byte, 256)
 		countRead, err = t.Read(buffer)
-		//		log.Traceln(buffer[:countRead])
 		for _, value := range string(buffer[:countRead]) {
+			var current rune
 			if unicode.IsLower(value) && ignoreCase {
-				r = unicode.ToUpper(value)
+				current = unicode.ToUpper(value)
 			} else {
-				r = value
+				current = value
 			}
-			found = true
-			break
+			for _, allowedRune := range allowed {
+				if unicode.IsLower(allowedRune) && ignoreCase {
+					allowedRune = unicode.ToUpper(allowedRune)
+				}
+				if current == allowedRune {
+					found = true
+					r = current
+					break
+				}
+			}
 		}
 		if err != nil {
 			break
 		}
 	}
 	return
-}
-
-func (t *AnsiTerminal) WaitKeys(allowed string, ignoreCase bool) (rune, error) {
-	// wait for key that is permitted and return. If key is character, it is converted to uppercase.
-	dataChannel := make(chan []byte,1)
-	errorChannel := make(chan error,1)
-	quit := make(chan bool,1)
-
-	var r rune
-	found := false
-
-	go func() {
-		buffer := make([]byte, 256)
-		for {
-			select {
-			case <-quit:
-				return
-			default:
-				countRead, err := t.Read(buffer)
-				if countRead > 0 {
-					dataChannel <- buffer[:countRead]
-				}
-				if err != nil {
-					errorChannel <- err
-					return
-				}
-			}
-		}
-	}()
-
-	for !found {
-		select {
-		case res := <-dataChannel:
-			for _, value := range string(res) {
-				var current rune
-				if unicode.IsLower(value) && ignoreCase {
-					current = unicode.ToUpper(value)
-				} else {
-					current = value
-				}
-				for _, allowedRune := range allowed {
-					if unicode.IsLower(allowedRune) && ignoreCase {
-						allowedRune = unicode.ToUpper(allowedRune)
-					}
-					if current == allowedRune {
-						found = true
-						r = current
-						break
-					}
-				}
-			}
-
-		case err := <-errorChannel:
-			return 0, err
-
-		case <-time.After(30 * time.Second):
-			quit <- true
-			return 0, fmt.Errorf("No data for 30 seconds.")
-		}
-
-	}
-	quit <- true
-	return r, nil
 }
 
 func (t *AnsiTerminal) Input(size int, mode InputMode) (result string, err error) {
