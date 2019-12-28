@@ -26,9 +26,20 @@ import (
 	"github.com/mdp/qrterminal"
 )
 
-func Start(term *ansiterm.AnsiTerminal) {
+// placeholder for hangup channel, so we can use it anywhere in our package
+var hangupChannel chan<- *ansiterm.AnsiTerminal
+
+func Start(term *ansiterm.AnsiTerminal, hangup chan<- *ansiterm.AnsiTerminal) {
 	// this delay seems to help with older DOS-based terminals running in DosBox.
 	time.Sleep(1 * time.Second)
+
+	// make our hangup handler global
+	hangupChannel = hangup
+
+	// make sure hangup occurs at the end
+	defer func() {
+		hangupChannel <- term
+	}()
 
 	// start here
 	term.ClearScreen()
@@ -47,6 +58,7 @@ func Start(term *ansiterm.AnsiTerminal) {
 	}
 
 	term.Printf("%s\n", line)
+
 
 	/*
 		term.SetColor(ansiterm.FG_GREEN, false)

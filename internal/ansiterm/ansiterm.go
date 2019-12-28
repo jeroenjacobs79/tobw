@@ -19,6 +19,7 @@ package ansiterm
 import (
 	"bufio"
 	"fmt"
+	"github.com/jeroenjacobs79/tobw/internal/config"
 	"io"
 	"io/ioutil"
 	"strings"
@@ -35,6 +36,8 @@ type AnsiTerminal struct {
 	columns     int
 	rows        int
 	Cp437toUtf8 bool
+	ConnType    config.ConnectionType
+	Address     string
 }
 
 type AnsiColor int
@@ -58,13 +61,15 @@ const (
 	InputUpfirst  InputMode = 4
 )
 
-func CreateAnsiTerminal(device io.ReadWriteCloser) *AnsiTerminal {
+func CreateAnsiTerminal(device io.ReadWriteCloser, connType config.ConnectionType, address string) *AnsiTerminal {
 	term := AnsiTerminal{
 		ioDevice:   device,
 		ReadWriter: bufio.NewReadWriter(bufio.NewReader(device), bufio.NewWriter(device)),
 		// this is pretty standard in case we don't receive any updates on the size
 		columns: 80,
 		rows:    24,
+		ConnType: connType,
+		Address: address,
 	}
 	return &term
 }

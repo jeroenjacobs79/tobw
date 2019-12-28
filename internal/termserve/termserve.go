@@ -32,6 +32,23 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+var (
+	telnetHangupChannel chan *ansiterm.AnsiTerminal
+	sshHangupChannel chan *ansiterm.AnsiTerminal
+	rawHangupChannel chan *ansiterm.AnsiTerminal
+)
+
+func init() {
+	// create our channels
+	telnetHangupChannel = make(chan *ansiterm.AnsiTerminal)
+	sshHangupChannel = make(chan *ansiterm.AnsiTerminal)
+	rawHangupChannel = make(chan *ansiterm.AnsiTerminal)
+	// connect our hangup handlers to the correct channels
+	go hangupTelnetTerminal(telnetHangupChannel)
+	go hangupSSHTerminal(sshHangupChannel)
+	go hangupRawTerminal(rawHangupChannel)
+}
+
 func StartListener(wg *sync.WaitGroup, address string, c config.ConnectionType, cp437ToUtf8 bool) {
 	// start telnet listener
 	log.Infof("Starting %s listener on address %s...", c, address)
@@ -116,11 +133,26 @@ func StartListener(wg *sync.WaitGroup, address string, c config.ConnectionType, 
 	}
 }
 
+// ssh connection handling
+
 func parseSize(data []byte) (w uint32, h uint32) {
 	w = binary.BigEndian.Uint32(data)
 	h = binary.BigEndian.Uint32(data[4:])
 	return
 }
+
+func hangupSSHTerminal(terms <- chan *ansiterm.AnsiTerminal) {
+	for term := range terms {
+		err := term.Close()
+		log.Infof("%s - Disconnected", term.Address)
+		monitoring.CurrentConnections.Dec()
+		monitoring.CurrentSSHConnections.Dec()
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}
+}
+
 
 func handleSSHRequest(conn net.Conn, conf *ssh.ServerConfig, cp437ToUtf8 bool) {
 	log.Infof("%s - Connected", conn.RemoteAddr())
@@ -146,7 +178,7 @@ func handleSSHRequest(conn net.Conn, conf *ssh.ServerConfig, cp437ToUtf8 bool) {
 			log.Errorln(err.Error())
 		}
 
-		term := ansiterm.CreateAnsiTerminal(channel)
+		term := ansiterm.CreateAnsiTerminal(channel, config.TCPSSH, conn.RemoteAddr().String())
 		term.Cp437toUtf8 = cp437ToUtf8
 
 		// Sessions have out-of-band requests such as "shell",
@@ -184,16 +216,22 @@ func handleSSHRequest(conn net.Conn, conf *ssh.ServerConfig, cp437ToUtf8 bool) {
 		monitoring.CurrentSSHConnections.Inc()
 
 		// start actual session
-		session.Start(term)
-		log.Infof("%s - Disconnected", conn.RemoteAddr())
-		err = term.Close()
-		// remove connection from metrics
+		session.Start(term, sshHangupChannel)
+
+	}
+}
+
+// telnet connection handling
+
+func hangupTelnetTerminal(terms <- chan *ansiterm.AnsiTerminal) {
+	for term := range terms {
+		err := term.Close()
+		log.Infof("%s - Disconnected", term.Address)
 		monitoring.CurrentConnections.Dec()
-		monitoring.CurrentSSHConnections.Dec()
+		monitoring.CurrentTelnetConnections.Dec()
 		if err != nil {
 			log.Error(err.Error())
 		}
-
 	}
 }
 
@@ -202,22 +240,11 @@ func handleTelnetRequest(conn net.Conn, cp437ToUtf8 bool) {
 	buf := make([]byte, 1024)
 	telnetConn := telnet.NewConnection(conn)
 	log.Infof("%s - Connected", telnetConn.RemoteAddr())
-	term := ansiterm.CreateAnsiTerminal(telnetConn)
+	term := ansiterm.CreateAnsiTerminal(telnetConn, config.TCPTelnet, conn.RemoteAddr().String())
 	term.Cp437toUtf8 = cp437ToUtf8
 	telnetConn.InstallResizeHandler(term.ResizeTerminal)
 	telnetConn.RequestTermSize()
 	log.Traceln(term)
-
-	// Close the connection when you're done with it.
-	defer func() {
-		log.Infof("%s - Disconnected", telnetConn.RemoteAddr())
-		err := term.Close()
-		monitoring.CurrentConnections.Dec()
-		monitoring.CurrentTelnetConnections.Dec()
-		if err != nil {
-			log.Error(err.Error())
-		}
-	}()
 
 	// Read a bit of data to let the telnet negotiation finish. Ignore any actual data for now.
 	_, _ = telnetConn.Read(buf)
@@ -225,27 +252,31 @@ func handleTelnetRequest(conn net.Conn, cp437ToUtf8 bool) {
 	monitoring.CurrentConnections.Inc()
 	monitoring.CurrentTelnetConnections.Inc()
 
-	session.Start(term)
+	session.Start(term, telnetHangupChannel)
 }
 
-func handleRawRequest(conn net.Conn, cp437ToUtf8 bool) {
-	log.Infof("%s - Connected", conn.RemoteAddr())
-	term := ansiterm.CreateAnsiTerminal(conn)
-	term.Cp437toUtf8 = cp437ToUtf8
+// Raw TCP connection handling
 
-	// Close the connection when you're done with it.
-	defer func() {
-		log.Infof("%s - Disconnected", conn.RemoteAddr())
+func hangupRawTerminal(terms <- chan *ansiterm.AnsiTerminal) {
+	for term := range terms {
 		err := term.Close()
+		log.Infof("%s - Disconnected", term.Address)
 		monitoring.CurrentConnections.Dec()
 		monitoring.CurrentRawConnections.Dec()
-
 		if err != nil {
 			log.Error(err.Error())
 		}
-	}()
+	}
+}
+
+
+func handleRawRequest(conn net.Conn, cp437ToUtf8 bool) {
+	log.Infof("%s - Connected", conn.RemoteAddr())
+	term := ansiterm.CreateAnsiTerminal(conn, config.TCPRaw, conn.RemoteAddr().String())
+	term.Cp437toUtf8 = cp437ToUtf8
+
 	monitoring.CurrentConnections.Inc()
 	monitoring.CurrentRawConnections.Inc()
 
-	session.Start(term)
+	session.Start(term, rawHangupChannel)
 }
