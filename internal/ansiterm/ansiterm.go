@@ -19,14 +19,15 @@ package ansiterm
 import (
 	"bufio"
 	"fmt"
-	"github.com/jeroenjacobs79/tobw/internal/config"
-	"golang.org/x/text/encoding/charmap"
 	"io"
 	"io/ioutil"
 	"strings"
 	"time"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/jeroenjacobs79/tobw/internal/config"
+	"golang.org/x/text/encoding/charmap"
 )
 
 type AnsiTerminal struct {
@@ -203,7 +204,6 @@ func (t *AnsiTerminal) DisplayMenuItem(id rune, description string) {
 }
 
 // Input routines
-
 
 type ReadResponse struct {
 	data []byte

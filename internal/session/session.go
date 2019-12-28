@@ -58,7 +58,6 @@ func Start(term *ansiterm.AnsiTerminal, hangup chan<- *ansiterm.AnsiTerminal) {
 
 	term.Printf("%s\n", line)
 
-
 	// qr test
 	var qrBuffer strings.Builder
 	qrConfig := qrterminal.Config{
@@ -72,7 +71,6 @@ func Start(term *ansiterm.AnsiTerminal, hangup chan<- *ansiterm.AnsiTerminal) {
 	// Taken from google example: https://github.com/google/google-authenticator/wiki/Key-Uri-Format
 	qrterminal.GenerateWithConfig("otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example", qrConfig)
 	// term.Print(qrBuffer.String())
-
 
 	adminUser := user.User{}
 	adminUser.Username = "test user"
@@ -98,9 +96,6 @@ func Start(term *ansiterm.AnsiTerminal, hangup chan<- *ansiterm.AnsiTerminal) {
 	} else {
 		term.Println("Password incorrect. Disconnecting...")
 	}
-
-
-
 
 	return
 }

@@ -34,8 +34,8 @@ import (
 
 var (
 	telnetHangupChannel chan *ansiterm.AnsiTerminal
-	sshHangupChannel chan *ansiterm.AnsiTerminal
-	rawHangupChannel chan *ansiterm.AnsiTerminal
+	sshHangupChannel    chan *ansiterm.AnsiTerminal
+	rawHangupChannel    chan *ansiterm.AnsiTerminal
 )
 
 func init() {
@@ -141,7 +141,7 @@ func parseSize(data []byte) (w uint32, h uint32) {
 	return
 }
 
-func hangupSSHTerminal(terms <- chan *ansiterm.AnsiTerminal) {
+func hangupSSHTerminal(terms <-chan *ansiterm.AnsiTerminal) {
 	for term := range terms {
 		err := term.Close()
 		log.Infof("%s - Disconnected", term.Address)
@@ -152,7 +152,6 @@ func hangupSSHTerminal(terms <- chan *ansiterm.AnsiTerminal) {
 		}
 	}
 }
-
 
 func handleSSHRequest(conn net.Conn, conf *ssh.ServerConfig, cp437ToUtf8 bool) {
 	log.Infof("%s - Connected", conn.RemoteAddr())
@@ -223,7 +222,7 @@ func handleSSHRequest(conn net.Conn, conf *ssh.ServerConfig, cp437ToUtf8 bool) {
 
 // telnet connection handling
 
-func hangupTelnetTerminal(terms <- chan *ansiterm.AnsiTerminal) {
+func hangupTelnetTerminal(terms <-chan *ansiterm.AnsiTerminal) {
 	for term := range terms {
 		err := term.Close()
 		log.Infof("%s - Disconnected", term.Address)
@@ -257,7 +256,7 @@ func handleTelnetRequest(conn net.Conn, cp437ToUtf8 bool) {
 
 // Raw TCP connection handling
 
-func hangupRawTerminal(terms <- chan *ansiterm.AnsiTerminal) {
+func hangupRawTerminal(terms <-chan *ansiterm.AnsiTerminal) {
 	for term := range terms {
 		err := term.Close()
 		log.Infof("%s - Disconnected", term.Address)
@@ -268,7 +267,6 @@ func hangupRawTerminal(terms <- chan *ansiterm.AnsiTerminal) {
 		}
 	}
 }
-
 
 func handleRawRequest(conn net.Conn, cp437ToUtf8 bool) {
 	log.Infof("%s - Connected", conn.RemoteAddr())
