@@ -17,10 +17,9 @@
 package session
 
 import (
+	"github.com/sirupsen/logrus"
 	"strings"
 	"time"
-
-	"github.com/jeroenjacobs79/tobw/internal/user"
 
 	"github.com/jeroenjacobs79/tobw/internal/ansiterm"
 	"github.com/mdp/qrterminal"
@@ -60,47 +59,6 @@ func Start(term *ansiterm.AnsiTerminal, hangup chan<- *ansiterm.AnsiTerminal) {
 	term.Printf("%s\n", line)
 
 
-	/*
-		term.SetColor(ansiterm.FG_GREEN, false)
-		term.Printf("People are flooding the square. You try to move to your destination, not afraid to use your elbows in the process...\n\n")
-		term.SetColor(ansiterm.FG_WHITE, true)
-		term.Printf("Choice your destination:\n\n")
-
-
-		// menu item
-		term.DisplayMenuItem('F', "Explore the forest")
-		term.Print("\t\t")
-		term.DisplayMenuItem('W', "Weapons 'R' Us")
-		term.Println("")
-
-		term.DisplayMenuItem('I', "Cockroach Inn")
-		term.Print("\t\t")
-		term.DisplayMenuItem('A', "Fashion armour store")
-		term.Println()
-
-		term.DisplayMenuItem('B', "Cheat'm and Crook Bank")
-		term.Print("\t")
-		term.DisplayMenuItem('T', "Training ground")
-		term.Println()
-
-		term.DisplayMenuItem('H', "Shaman's Healer Hut")
-		term.Print("\t\t")
-		term.DisplayMenuItem('Y', "Your stats")
-		term.Println()
-
-		term.DisplayMenuItem('K', "Fluffy Kitty Brothel")
-		term.Print("\t")
-		term.DisplayMenuItem('O', "Who's online?")
-		term.Println()
-
-		term.DisplayMenuItem('P', "Post Office")
-		term.Print("\t\t\t")
-		term.DisplayMenuItem('!', "Log off")
-		term.Println()
-
-		term.DisplayMenuItem('C', "City Hall")
-		term.Println()
-	*/
 	// qr test
 	var qrBuffer strings.Builder
 	qrConfig := qrterminal.Config{
@@ -115,6 +73,7 @@ func Start(term *ansiterm.AnsiTerminal, hangup chan<- *ansiterm.AnsiTerminal) {
 	qrterminal.GenerateWithConfig("otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example", qrConfig)
 	// term.Print(qrBuffer.String())
 
+	/*
 	adminUser := user.User{}
 	adminUser.Username = "test user"
 	adminUser.SetPassword("mytestpw")
@@ -138,6 +97,13 @@ func Start(term *ansiterm.AnsiTerminal, hangup chan<- *ansiterm.AnsiTerminal) {
 
 	} else {
 		term.Println("Password incorrect. Disconnecting...")
+	}
+
+	*/
+	_, err := term.WaitKeys("ghj", true)
+	if err != nil {
+		logrus.Errorln(err.Error())
+		return
 	}
 	return
 }
