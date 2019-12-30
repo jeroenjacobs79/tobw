@@ -2,6 +2,10 @@ dist: bionic
 language: go
 sudo: false
 
+services:
+  - docker
+
+
 matrix:
   include:
     # "1.x" always refers to the latest Go version, inc. the patch release.
@@ -27,7 +31,7 @@ before_script:
 
 script:
   - make test
-  - if [ "${LATEST}" = "true" ]; then make; else make local; fi
+  - if [ "${LATEST}" = "true" ]; then make build && make docker; else make local; fi
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
