@@ -28,7 +28,11 @@ build:
 	@echo "*** Building binaries for supported architectures... ***"
 	$(GOX) -osarch=$(BIN_TARGETS) -ldflags=$(LD_FLAGS) -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}"
 	@echo "*** Done ***"
-    
+
+docker: build
+	@echo "*** Building docker image"
+	docker build -t tobw:$(VERSION) .
+
 local:
 	@echo "*** Building local binary... ***"
 	$(GOBUILD) -o $(BINARY_NAME) -v -ldflags=$(LD_FLAGS) ./
@@ -88,6 +92,7 @@ help:
 	@printf $(HELP_FORMATSTRING) "bootstrap" "Install tools needed for build"
 	@printf $(HELP_FORMATSTRING) "dep" "Install libraries needed for compilation"
 	@printf $(HELP_FORMATSTRING) "build" "Compile for all targets"
+	@printf $(HELP_FORMATSTRING) "docker" "Build Docker container"
 	@printf $(HELP_FORMATSTRING) "vet" "Checks code for common mistakes"
 	@printf $(HELP_FORMATSTRING) "lint" "Perform lint/revive check"
 	@printf $(HELP_FORMATSTRING) "test" "Run tests"

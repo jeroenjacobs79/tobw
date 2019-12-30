@@ -1,23 +1,4 @@
-# Binaries for programs and plugins
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
+# we only need the statically linked binary, so that we can add it to the docker image
+*
+!bin/tobw_linux_amd64
 
-# Test binary, built with `go test -c`
-*.test
-
-# Output of the go coverage tool, specifically when used with LiteIDE
-*.out
-
-# Goland folder
-.idea/
-
-# exclude main binaries
-tobw
-tobw.exe
-bin/
-
-# log files
-*.log
