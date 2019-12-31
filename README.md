@@ -25,9 +25,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 The following third-party software is also included:
 
-sirupsen/logrus (c) Simon Eskildsen, MIT license. See: https://github.com/sirupsen/logrus
-mdp/qrterminal (c) Mark Percival, MIT license. See: https://github.com/mdp/qrterminal
+- sirupsen/logrus (c) Simon Eskildsen, MIT license. See: https://github.com/sirupsen/logrus
+- mdp/qrterminal (c) Mark Percival, MIT license. See: https://github.com/mdp/qrterminal
 
+### Other
+
+- Legend of the Red Dragon (LORD) (c) 1989 - 2019, Seth Robinson and Metropolis GamePort
 
 ## Description
 
