@@ -2,17 +2,20 @@ GOBUILD=go build
 BINARY_NAME=tobw
 COV_REPORT=coverage.txt
 
+.DEFAULT_GOAL := local
+
 VERSION=$(shell git describe --tags --always --dirty)
 # linker flags for stripping debug info and injecting version info
 LD_FLAGS="-s -w -X main.Version=$(VERSION)"
 
 # Targets we want to build
-UNIX_TARGETS="linux/386 linux/amd64 linux/arm linux/arm64 \
+UNIX_TARGETS=linux/386 linux/amd64 linux/arm linux/arm64 \
 freebsd/386 freebsd/amd64 freebsd/arm \
 openbsd/386 openbsd/amd64 openbsd/arm \
-netbsd/386 netbsd/amd64 netbsd/arm"
+netbsd/386 netbsd/amd64 netbsd/arm \
+darwin/386 darwin/amd64
 
-WIN_TARGETS="windows/386 windows/amd64"
+WIN_TARGETS=windows/386 windows/amd64
 
 # Used for help output
 HELP_SPACING=15
@@ -31,37 +34,41 @@ EXTERNAL_TOOLS=\
 # template rules which are used to construct the targets
 define UNIXRULE
 bin/$(BINARY_NAME)_$1_$2: $(GO_FILES)
-        GOOS=$1 GOARCH=$2 go build -v -ldflags=$(LD_FLAGS) -o $@
+	GOOS=$1 GOARCH=$2 go build -v -ldflags=$(LD_FLAGS) -o bin/$(BINARY_NAME)_$1_$2
 endef
 
 define WINRULE
-bin/$(BINARY_NAME)_$(GOOS)_$(GOARCH).exe: $(GO_FILES)
-        GOOS=$(GOOS) GOARCH=$(GOARCH) go build -v -ldflags=$(LD_FLAGS) -o $@
+bin/$(BINARY_NAME)_$1_$2.exe: $(GO_FILES)
+	GOOS=$1 GOARCH=$2 go build -v -ldflags=$(LD_FLAGS) -o bin/$(BINARY_NAME)_$1_$2.exe
 endef
 
 # some stuff to split the os/arch string to their own variables
-get_goarch = $(firstword $(subst /, ,$1))
-get_goos = $(word 2 $(subst /, ,$1))
+get_goos = $(firstword $(subst /, ,$(1)))
+get_goarch = $(word 2,$(subst /, ,$(1)))
+get_unix_target = bin/$(BINARY_NAME)_$(call get_goos,$1)_$(call get_goarch,$1)
+get_win_target = bin/$(BINARY_NAME)_$(call get_goos,$1)_$(call get_goarch,$1).exe
 
 # construct our targets
-$(foreach target,$(UNIX_TARGETS),$(eval $(call UNIXRULE, $(call get_goarch, $(target)), $call(get_goos, $(target)))))
 
+$(foreach target,$(UNIX_TARGETS),$(eval $(call UNIXRULE,$(call get_goos,$(target)),$(call get_goarch,$(target)))))
+$(foreach target,$(WIN_TARGETS),$(eval $(call WINRULE,$(call get_goos,$(target)),$(call get_goarch,$(target)))))
 
-.PHONY: build local clean fmt check_spelling fix_spelling vet dep bootstrap help tests lint
+# construct string of all target names
+ALL_UNIX_TARGETS = $(foreach target,$(UNIX_TARGETS),$(call get_unix_target,$(target)))
+ALL_WIN_TARGETS = $(foreach target,$(WIN_TARGETS),$(call get_win_target,$(target)))
 
-build:
-	@echo "*** Building binaries for supported architectures... ***"
-	$(GOX) -osarch=$(BIN_TARGETS) -ldflags=$(LD_FLAGS) -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}"
-	@echo "*** Done ***"
+all-targets: $(ALL_UNIX_TARGETS) $(ALL_WIN_TARGETS)
 
-docker: bin/tobw_linux_amd64
-	@echo "*** Building docker image"
-	docker build -t tobw:$(VERSION) .
+.PHONY: all all-targets local clean fmt check_spelling fix_spelling vet dep bootstrap help tests lint
 
 local:
 	@echo "*** Building local binary... ***"
 	$(GOBUILD) -o $(BINARY_NAME) -v -ldflags=$(LD_FLAGS) ./
 	@echo "*** Done ***"
+
+docker: bin/tobw_linux_amd64
+	@echo "*** Building docker image"
+	docker build -t tobw:$(VERSION) .
 
 clean:
 	@echo "*** Cleaning up object files... ***"
@@ -113,10 +120,11 @@ test:
 
 help:
 	@printf "\n*** Available make targets ***\n\n"
+	@printf $(HELP_FORMATSTRING) "local" "Build executable for your OS, for testing purposes (this is the default)"
 	@printf $(HELP_FORMATSTRING) "help" "This message"
 	@printf $(HELP_FORMATSTRING) "bootstrap" "Install tools needed for build"
 	@printf $(HELP_FORMATSTRING) "dep" "Install libraries needed for compilation"
-	@printf $(HELP_FORMATSTRING) "build" "Compile for all targets"
+	@printf $(HELP_FORMATSTRING) "all-targets" "Compile for all targets"
 	@printf $(HELP_FORMATSTRING) "docker" "Build Docker container"
 	@printf $(HELP_FORMATSTRING) "vet" "Checks code for common mistakes"
 	@printf $(HELP_FORMATSTRING) "lint" "Perform lint/revive check"
@@ -124,6 +132,5 @@ help:
 	@printf $(HELP_FORMATSTRING) "fmt" "Fix formatting on .go files"
 	@printf $(HELP_FORMATSTRING) "check_spelling" "Show potential spelling mistakes"
 	@printf $(HELP_FORMATSTRING) "fix_spelling" "Correct detected spelling mistakes"
-	@printf $(HELP_FORMATSTRING) "local" "Build executable for your OS, for testing purposes"
 	@printf $(HELP_FORMATSTRING) "clean" "Clean your working directory"
 	@printf "\n*** End ***\n\n"
