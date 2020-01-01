@@ -27,7 +27,7 @@ install:
 before_script:
   - make lint
   - make vet
-  - make check_spelling
+  - make check-spelling
 
 script:
   - make test

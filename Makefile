@@ -1,6 +1,7 @@
 GOBUILD=go build
 BINARY_NAME=tobw
 COV_REPORT=coverage.txt
+CGO_ENABLED=0
 
 .DEFAULT_GOAL := local
 
@@ -9,13 +10,12 @@ VERSION=$(shell git describe --tags --always --dirty)
 LD_FLAGS="-s -w -X main.Version=$(VERSION)"
 
 # Targets we want to build
-UNIX_TARGETS=linux/386 linux/amd64 linux/arm linux/arm64 \
+PLATFORMS=linux/386 linux/amd64 linux/arm linux/arm64 \
 freebsd/386 freebsd/amd64 freebsd/arm \
 openbsd/386 openbsd/amd64 openbsd/arm \
 netbsd/386 netbsd/amd64 netbsd/arm \
-darwin/386 darwin/amd64
-
-WIN_TARGETS=windows/386 windows/amd64
+darwin/386 darwin/amd64 \
+windows/386 windows/amd64
 
 # Used for help output
 HELP_SPACING=15
@@ -32,34 +32,30 @@ EXTERNAL_TOOLS=\
 
 
 # template rules which are used to construct the targets
-define UNIXRULE
-bin/$(BINARY_NAME)_$1_$2: $(GO_FILES)
-	GOOS=$1 GOARCH=$2 go build -v -ldflags=$(LD_FLAGS) -o bin/$(BINARY_NAME)_$1_$2
-endef
-
-define WINRULE
-bin/$(BINARY_NAME)_$1_$2.exe: $(GO_FILES)
-	GOOS=$1 GOARCH=$2 go build -v -ldflags=$(LD_FLAGS) -o bin/$(BINARY_NAME)_$1_$2.exe
+# parameter 1: OS, parameter 2: architecture, parameter 3: target name
+define TARGETRULE
+$3: $(GO_FILES)
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=$1 GOARCH=$2 go build -v -ldflags=$(LD_FLAGS) -o $3
 endef
 
 # some stuff to split the os/arch string to their own variables
 get_goos = $(firstword $(subst /, ,$(1)))
 get_goarch = $(word 2,$(subst /, ,$(1)))
+# aux functions called by get_target_output
 get_unix_target = bin/$(BINARY_NAME)_$(call get_goos,$1)_$(call get_goarch,$1)
 get_win_target = bin/$(BINARY_NAME)_$(call get_goos,$1)_$(call get_goarch,$1).exe
+# determine output filename for a platform
+get_target_output = $(if $(findstring windows,$(call get_goos,$1)),$(call get_win_target,$1),$(call get_unix_target,$1))
 
 # construct our targets
-
-$(foreach target,$(UNIX_TARGETS),$(eval $(call UNIXRULE,$(call get_goos,$(target)),$(call get_goarch,$(target)))))
-$(foreach target,$(WIN_TARGETS),$(eval $(call WINRULE,$(call get_goos,$(target)),$(call get_goarch,$(target)))))
+$(foreach platform,$(PLATFORMS),$(eval $(call TARGETRULE,$(call get_goos,$(platform)),$(call get_goarch,$(platform)),$(call get_target_output,$(platform)))))
 
 # construct string of all target names
-ALL_UNIX_TARGETS = $(foreach target,$(UNIX_TARGETS),$(call get_unix_target,$(target)))
-ALL_WIN_TARGETS = $(foreach target,$(WIN_TARGETS),$(call get_win_target,$(target)))
+ALL_PLATFORMS = $(foreach platform,$(PLATFORMS),$(call get_target_output,$(platform)))
 
-all-targets: $(ALL_UNIX_TARGETS) $(ALL_WIN_TARGETS)
+all-targets: $(ALL_PLATFORMS)
 
-.PHONY: all all-targets local clean fmt check_spelling fix_spelling vet dep bootstrap help tests lint
+.PHONY: all-targets local clean fmt check_spelling fix_spelling vet dep bootstrap help tests lint
 
 local:
 	@echo "*** Building local binary... ***"
@@ -87,12 +83,12 @@ fmt:
 lint:
 	@revive $(GO_FILES)
 
-check_spelling:
+check-spelling:
 	@echo "*** Check for common spelling mistakes in .go files... ***"
 	@misspell -error $(GO_FILES)
 	@echo "*** Done ***"
 
-fix_spelling:
+fix-spelling:
 	@echo "*** Fix any encountered spelling mistakes in .go files... ***"
 	@misspell -w $(GO_FILES)
 	@echo "*** Done ***"
@@ -130,7 +126,7 @@ help:
 	@printf $(HELP_FORMATSTRING) "lint" "Perform lint/revive check"
 	@printf $(HELP_FORMATSTRING) "test" "Run tests"
 	@printf $(HELP_FORMATSTRING) "fmt" "Fix formatting on .go files"
-	@printf $(HELP_FORMATSTRING) "check_spelling" "Show potential spelling mistakes"
-	@printf $(HELP_FORMATSTRING) "fix_spelling" "Correct detected spelling mistakes"
+	@printf $(HELP_FORMATSTRING) "check-spelling" "Show potential spelling mistakes"
+	@printf $(HELP_FORMATSTRING) "fix-spelling" "Correct detected spelling mistakes"
 	@printf $(HELP_FORMATSTRING) "clean" "Clean your working directory"
 	@printf "\n*** End ***\n\n"
