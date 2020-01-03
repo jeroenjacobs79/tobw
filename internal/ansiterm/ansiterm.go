@@ -297,34 +297,26 @@ func (t *AnsiTerminal) WaitKeys(allowed string, ignoreCase bool) (r rune, err er
 	return
 }
 
-func (t *AnsiTerminal) WaitKeys2(allowed string, ignoreCase bool) (r rune, err error) {
-	// wait for key that is permitted and return. If key is character, it is converted to uppercase.
-	found := false
-	countRead := 0
-	for !found {
-		buffer := make([]byte, 256)
-		countRead, err = t.Read(buffer)
-		for _, value := range string(buffer[:countRead]) {
-			var current rune
-			if unicode.IsLower(value) && ignoreCase {
-				current = unicode.ToUpper(value)
-			} else {
-				current = value
-			}
-			for _, allowedRune := range allowed {
-				if unicode.IsLower(allowedRune) && ignoreCase {
-					allowedRune = unicode.ToUpper(allowedRune)
-				}
-				if current == allowedRune {
-					found = true
-					r = current
-					break
-				}
-			}
+func (t *AnsiTerminal) HasIncomingData() (result bool) {
+	resultChannel := make(chan []byte)
+
+	go func() {
+		response, _ := t.Peek(1)
+		resultChannel <- response
+	}()
+
+	select {
+	case response := <-resultChannel:
+		// check if actually contains data
+		if len(response) > 0 {
+			result = true
+		} else {
+			result = false
 		}
-		if err != nil {
-			break
-		}
+
+	// since Peek blocks if no data is present, we use a timer
+	case <-time.After(200 * time.Millisecond):
+		result = false
 	}
 	return
 }
