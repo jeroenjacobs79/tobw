@@ -31,7 +31,7 @@ before_script:
 
 script:
   - make test
-  - if [ "${LATEST}" = "true" ]; then make -j all-targets && make docker; else make; fi
+  - if [ "${LATEST}" = "true" ]; then make -j all-platforms && make docker; else make; fi
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
