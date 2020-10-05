@@ -21,24 +21,54 @@ import (
 	"time"
 
 	"github.com/jeroenjacobs79/tobw/internal/ansiterm"
+	"github.com/jeroenjacobs79/tobw/internal/config"
+	"github.com/jeroenjacobs79/tobw/internal/monitoring"
 	"github.com/jeroenjacobs79/tobw/internal/user"
 	"github.com/mdp/qrterminal"
 )
 
-// placeholder for hangup channel, so we can use it anywhere in our package
-var hangupChannel chan<- *ansiterm.AnsiTerminal
+type TerminalSession struct {
+	//
+	Terminal       *ansiterm.AnsiTerminal
+	ConnectionType config.ConnectionType
+	OriginAddress  string
+}
 
-func Start(term *ansiterm.AnsiTerminal, hangup chan<- *ansiterm.AnsiTerminal) {
+// placeholder for hangup channel, so we can use it anywhere in our package
+var hangupChannel chan<- *TerminalSession
+
+func CreateSession(term *ansiterm.AnsiTerminal, conntype config.ConnectionType, origin string) *TerminalSession {
+	session := TerminalSession{
+		Terminal:       term,
+		ConnectionType: conntype,
+		OriginAddress:  origin,
+	}
+	return &session
+}
+
+func Start(session *TerminalSession, hangup chan<- *TerminalSession) {
 	// this delay seems to help with older DOS-based terminals running in DosBox.
 	time.Sleep(1 * time.Second)
 
+	term := session.Terminal
 	// make our hangup handler global
 	hangupChannel = hangup
 
 	// make sure hangup occurs at the end
 	defer func() {
-		hangupChannel <- term
+		hangupChannel <- session
 	}()
+
+	// set metrics
+	monitoring.CurrentConnections.Inc()
+	switch session.ConnectionType {
+	case config.TCPRaw:
+		monitoring.CurrentRawConnections.Inc()
+	case config.TCPTelnet:
+		monitoring.CurrentTelnetConnections.Inc()
+	case config.TCPSSH:
+		monitoring.CurrentSSHConnections.Inc()
+	}
 
 	// start here
 	term.ClearScreen()

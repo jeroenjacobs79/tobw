@@ -17,9 +17,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 
 	"github.com/jeroenjacobs79/tobw/internal/monitoring"
 
@@ -36,20 +39,45 @@ const (
 )
 
 func main() {
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	defer cancelFunc()
+	go cancelOnInterrupt(ctx, cancelFunc)
+	err := run(ctx)
+	if err != nil && err != context.Canceled && err != context.DeadlineExceeded {
+		log.Fatalln(err)
+	}
+}
+
+func cancelOnInterrupt(ctx context.Context, cancelFunction context.CancelFunc) {
+	term := make(chan os.Signal, 1)
+	signal.Notify(term, os.Interrupt, syscall.SIGTERM)
+
+	for {
+		select {
+		case sig := <-term:
+			log.Infof("Received %s, exiting gracefully...", sig)
+			cancelFunction()
+			os.Exit(0)
+		case <-ctx.Done():
+			os.Exit(0)
+		}
+	}
+}
+
+func run(ctx context.Context) error {
 	// parse commandline for config file. Error if not specified.
 	if len(os.Args) != 2 {
 		fmt.Printf("%s (version %s)\n", AppName, Version)
-		fmt.Println("Error: No config file specified.")
+		fmt.Println("No config file specified.")
 		fmt.Println()
 		fmt.Println("Usage:", os.Args[0], "/path/to/config.yaml")
-		os.Exit(1)
+		return nil
 	}
 
 	// start parsing config
 	listeners, err := config.ParseConfig(os.Args[1])
 	if err != nil {
-		log.Error(err)
-		os.Exit(2)
+		return err
 	}
 
 	// set log format to include timestamp, even when TTY is attached.
@@ -71,5 +99,5 @@ func main() {
 		go termserve.StartListener(&wg, fmt.Sprintf("%s:%d", listener.Address, listener.Port), listener.ListenType, listener.ConvertUTF8)
 	}
 	wg.Wait()
-
+	return nil
 }
