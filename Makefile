@@ -53,7 +53,7 @@ $(foreach platform,$(PLATFORMS),$(eval $(call TARGETRULE,$(call get_goos,$(platf
 # construct string of all target names
 ALL_PLATFORMS = $(foreach platform,$(PLATFORMS),$(call get_target_output,$(platform)))
 
-all-targets: $(ALL_PLATFORMS)
+all-platforms: $(ALL_PLATFORMS)
 
 .PHONY: all-targets local clean fmt check_spelling fix_spelling vet dep bootstrap help tests lint
 
@@ -120,7 +120,7 @@ help:
 	@printf $(HELP_FORMATSTRING) "help" "This message"
 	@printf $(HELP_FORMATSTRING) "bootstrap" "Install tools needed for build"
 	@printf $(HELP_FORMATSTRING) "dep" "Install libraries needed for compilation"
-	@printf $(HELP_FORMATSTRING) "all-targets" "Compile for all targets"
+	@printf $(HELP_FORMATSTRING) "all-platforms" "Compile for all platforms"
 	@printf $(HELP_FORMATSTRING) "docker" "Build Docker container"
 	@printf $(HELP_FORMATSTRING) "vet" "Checks code for common mistakes"
 	@printf $(HELP_FORMATSTRING) "lint" "Perform lint/revive check"
