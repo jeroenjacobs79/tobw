@@ -56,7 +56,6 @@ func hangupTerminalSession(sessions <-chan *session.TerminalSession) {
 		default:
 			log.Errorf("Unknown terminal-type detected!")
 		}
-		monitoring.CurrentSSHConnections.Dec()
 		if err != nil {
 			log.Error(err.Error())
 		}

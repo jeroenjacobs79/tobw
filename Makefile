@@ -11,9 +11,9 @@ LD_FLAGS="-s -w -X main.Version=$(VERSION)"
 
 # Targets we want to build
 PLATFORMS=linux/386 linux/amd64 linux/arm linux/arm64 \
-freebsd/386 freebsd/amd64 freebsd/arm \
-openbsd/386 openbsd/amd64 openbsd/arm \
-netbsd/386 netbsd/amd64 netbsd/arm \
+#freebsd/386 freebsd/amd64 freebsd/arm \
+#openbsd/386 openbsd/amd64 openbsd/arm \
+#netbsd/386 netbsd/amd64 netbsd/arm \
 darwin/386 darwin/amd64 \
 windows/386 windows/amd64
 
